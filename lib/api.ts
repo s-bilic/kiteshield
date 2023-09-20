@@ -6,4 +6,15 @@ const getTransactions = async (address: string) => {
   return data.slice(0, 5);
 };
 
-export { getTransactions };
+const getTokenPrices = async (client: any, acceptedTokens: any) => {
+  const clientData = await client.getData();
+
+  const d = acceptedTokens?.map((item: any) => ({
+    ...item,
+    price: clientData?.productPrice.get(item.key)?.price,
+  }));
+
+  return d;
+};
+
+export { getTransactions, getTokenPrices };

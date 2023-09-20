@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,15 +25,35 @@ import { Toggle } from "@/components/ui/toggle";
 import { Slider } from "@/components/ui/slider";
 import tokenList from "../tokenList.json";
 import { Separator } from "@/components/ui/separator";
-import { useState } from "react";
+import {
+  PythConnection,
+  getPythProgramKeyForCluster,
+  PythHttpClient,
+} from "@pythnetwork/client";
+import { PriceServiceConnection } from "@pythnetwork/price-service-client";
+import { useConnection } from "@solana/wallet-adapter-react";
+import { pythTokens } from "@/lib/tokens";
+import { getTokenPrices } from "@/lib/api";
 
 interface IProps {
   data: [];
 }
 
 const Transactions = ({ data }: IProps) => {
+  const [tokenPrices, setTokenPrices] = useState([]);
+  const { connection } = useConnection();
   const [activeCards, setActiveCards] = useState<number[]>([]);
   const [sliderValue, setSliderValue] = useState([20]);
+
+  const pythClient = new PythHttpClient(
+    connection,
+    getPythProgramKeyForCluster("pythtest-crosschain"),
+  );
+
+  const fetchTokenPrices = async () => {
+    const data = await getTokenPrices(pythClient, pythTokens);
+    setTokenPrices(data);
+  };
 
   const handleToggle = (index: number) => {
     // Check if the card is already active, and toggle its state accordingly
@@ -43,8 +63,17 @@ const Transactions = ({ data }: IProps) => {
       setActiveCards([...activeCards, index]);
     }
   };
+  useEffect(() => {
+    fetchTokenPrices();
+  }, []);
 
-  console.log(sliderValue);
+  const transactionsData = data?.map((item) => ({
+    ...item,
+    price: tokenPrices?.find((t) => t.mint === item?.tokenTransfers[1]?.mint)?
+      .price.toFixed(3),
+  }));
+
+  console.log(transactionsData);
   return (
     <div className="w-full">
       {/* <h2 className="text-2xl font-bold tracking-tight">Latest transactions</h2>
@@ -52,7 +81,7 @@ const Transactions = ({ data }: IProps) => {
       <p className="text-xs text-muted-foreground">+201 since last hour</p>
       <Separator decorative={false} className="my-2" /> */}
 
-      {data?.map((item, index) => (
+      {transactionsData?.map((item, index) => (
         <React.Fragment key={index}>
           {index !== 0 && <Separator decorative={false} className="my-2" />}
           <Card className="p-4">
@@ -81,6 +110,8 @@ const Transactions = ({ data }: IProps) => {
               </div>
               <CardDescription>
                 {item?.type === "UNKNOWN" ? "Normal transaction" : item?.type}
+                <br></br>
+                {"$" + item?.price}
               </CardDescription>
               <div className="flex space-x-3">
                 <Toggle

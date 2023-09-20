@@ -2,7 +2,7 @@ import Transactions from "@/components/transactions";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getTransactions } from "@/lib/api";
-
+import { useConnection } from "@solana/wallet-adapter-react";
 export default async function Home() {
   const dataTransactions = await getTransactions(
     "ARLQYuL9HEoUtBXpDG26YyvGUAnHJfYbLSstvrm1vS24",
