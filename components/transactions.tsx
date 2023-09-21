@@ -69,11 +69,11 @@ const Transactions = ({ data }: IProps) => {
 
   const transactionsData = data?.map((item) => ({
     ...item,
-    price: tokenPrices?.find((t) => t.mint === item?.tokenTransfers[1]?.mint)?
-      .price.toFixed(3),
+    price: tokenPrices
+      ?.find((t) => t.mint === item?.token?.mint)
+      ?.price.toFixed(3),
   }));
 
-  console.log(transactionsData);
   return (
     <div className="w-full">
       {/* <h2 className="text-2xl font-bold tracking-tight">Latest transactions</h2>
@@ -111,7 +111,9 @@ const Transactions = ({ data }: IProps) => {
               <CardDescription>
                 {item?.type === "UNKNOWN" ? "Normal transaction" : item?.type}
                 <br></br>
-                {"$" + item?.price}
+                {"$" + item?.price + "(current)"}
+                <br></br>
+                {"$" + item?.tokenPriceHistory?.price}
               </CardDescription>
               <div className="flex space-x-3">
                 <Toggle
@@ -131,12 +133,12 @@ const Transactions = ({ data }: IProps) => {
                   <div className="flex justify-between w-full gap-10">
                     <div className="grid w-full w-30 max-w-sm items-center gap-2.5">
                       <Label htmlFor="decrease">If the price drops by</Label>
-                      <Slider
+                      {/* <Slider
                         defaultValue={[sliderValue]}
                         max={100}
                         step={1}
                         onValueChange={(e) => setSliderValue(e[0])}
-                      />
+                      /> */}
                       <p className="text-xs text-muted-foreground">
                         -{sliderValue}%
                       </p>

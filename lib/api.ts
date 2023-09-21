@@ -9,12 +9,21 @@ const getTransactions = async (address: string) => {
 const getTokenPrices = async (client: any, acceptedTokens: any) => {
   const clientData = await client.getData();
 
-  const d = acceptedTokens?.map((item: any) => ({
+  const data = acceptedTokens?.map((item: any) => ({
     ...item,
     price: clientData?.productPrice.get(item.key)?.price,
   }));
 
-  return d;
+  return data;
 };
 
-export { getTransactions, getTokenPrices };
+const getTokenPricesHistory = async (id: any, timestamp: any) => {
+  const url = `https://benchmarks.pyth.network/v1/updates/price/${timestamp}?ids=${id}&parsed=true
+  `;
+  const response = await fetch(url);
+  const data = await response.json();
+
+  return data;
+};
+
+export { getTransactions, getTokenPrices, getTokenPricesHistory };
