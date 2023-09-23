@@ -1,3 +1,12 @@
+const getTokenList = async () => {
+  const url = "https://token.jup.ag/strict";
+
+  const response = await fetch(url);
+  const data = await response.json();
+
+  return data;
+};
+
 const getTransactions = async (address: string) => {
   const url = `https://api.helius.xyz/v0/addresses/${address}/transactions?api-key=${process.env.API_KEY_HELIUS}`;
   const response = await fetch(url);
@@ -26,4 +35,4 @@ const getTokenPricesHistory = async (id: any, timestamp: any) => {
   return data;
 };
 
-export { getTransactions, getTokenPrices, getTokenPricesHistory };
+export { getTokenList, getTransactions, getTokenPrices, getTokenPricesHistory };

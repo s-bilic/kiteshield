@@ -23,7 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Toggle } from "@/components/ui/toggle";
 import { Slider } from "@/components/ui/slider";
-import tokenList from "../tokenList.json";
+
 import { Separator } from "@/components/ui/separator";
 import {
   PythConnection,
@@ -36,10 +36,11 @@ import { pythTokens } from "@/lib/tokens";
 import { getTokenPrices } from "@/lib/api";
 
 interface IProps {
-  data: [];
+  data?: [];
+  tokenList?: [];
 }
 
-const Transactions = ({ data }: IProps) => {
+const Transactions = ({ data, tokenList }: IProps) => {
   const [tokenPrices, setTokenPrices] = useState([]);
   const { connection } = useConnection();
   const [activeCards, setActiveCards] = useState<number[]>([]);
@@ -92,7 +93,12 @@ const Transactions = ({ data }: IProps) => {
                   width={40}
                   height={40}
                   alt={"t"}
-                  src={tokenList[item?.tokenTransfers[0]?.mint].logo}
+                  src={
+                    tokenList?.find(
+                      (token) =>
+                        token?.address === item?.tokenTransfers[0]?.mint,
+                    )?.logoURI
+                  }
                 />
                 {"->"}
                 <div className="flex items-center">
@@ -101,7 +107,12 @@ const Transactions = ({ data }: IProps) => {
                     width={40}
                     height={40}
                     alt={"t"}
-                    src={tokenList[item?.tokenTransfers[1]?.mint].logo}
+                    src={
+                      tokenList?.find(
+                        (token) =>
+                          token?.address === item?.tokenTransfers[1]?.mint,
+                      )?.logoURI
+                    }
                   />
                   <p className="text-xs text-muted-foreground">
                     {item?.tokenTransfers[1]?.tokenAmount}

@@ -2,10 +2,16 @@ import Transactions from "@/components/transactions";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getTransactions } from "@/lib/api";
-import { getTokenPricesHistory } from "@/lib/api";
+import { getTokenList, getTokenPricesHistory } from "@/lib/api";
 import { pythTokens } from "@/lib/tokens";
+import { response } from "@/lib/ai";
 
 export default async function Home() {
+  // if (response) {
+  //   console.log(JSON.stringify(response));
+  // }
+
+  const tokenList = await getTokenList();
   const transactions = await getTransactions(
     "ARLQYuL9HEoUtBXpDG26YyvGUAnHJfYbLSstvrm1vS24",
   );
@@ -48,7 +54,7 @@ export default async function Home() {
           <TabsTrigger value="password">Events</TabsTrigger>
         </TabsList>
         <TabsContent value="account">
-          <Transactions data={data} />
+          <Transactions data={data} tokenList={tokenList} />
         </TabsContent>
         <TabsContent value="password">n.a.</TabsContent>
       </Tabs>
