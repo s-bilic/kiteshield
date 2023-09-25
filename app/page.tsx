@@ -1,8 +1,7 @@
 import Transactions from "@/components/transactions";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getTransactions } from "@/lib/api";
-import { getTokenList, getTokenPricesHistory } from "@/lib/api";
+import { getTransactions, getTokenList, getTokenPriceHistory } from "@/lib/api";
 import { pythTokens } from "@/lib/tokens";
 import { response } from "@/lib/ai";
 
@@ -10,7 +9,6 @@ export default async function Home() {
   // if (response) {
   //   console.log(JSON.stringify(response));
   // }
-
   const tokenList = await getTokenList();
   const transactions = await getTransactions(
     "ARLQYuL9HEoUtBXpDG26YyvGUAnHJfYbLSstvrm1vS24",
@@ -29,11 +27,11 @@ export default async function Home() {
   // Here we put the combine newTransactions + historic token price data here.
   const data = await Promise.all(
     newTransactions?.map(async (item) => {
-      const tokenPriceHistory = await getTokenPricesHistory(
+      const tokenPriceHistory = await getTokenPriceHistory(
         item?.token?.id,
         item.timestamp,
+        false,
       );
-
       return {
         ...item,
         tokenPriceHistory: {
