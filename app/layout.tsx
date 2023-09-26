@@ -24,12 +24,12 @@ export default function RootLayout({
       <body className={inter.className}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="dark"
           enableSystem
           disableTransitionOnChange
         >
           <Wallet>
-            <div className="p-5 mx-auto w-[800px]">{children}</div>
+            <div className="p-5 mx-auto w-[680px]">{children}</div>
           </Wallet>
         </ThemeProvider>
       </body>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 import PriceChart from "./priceChart";
 import Image from "next/image";
 import { Card, CardDescription } from "./ui/card";
@@ -46,14 +46,14 @@ const Transaction = ({
 
   return (
     <Card
-      className="p-5 hover:border-slate-500 hover:cursor-pointer"
+      className="p-5 hover:border-white hover:cursor-pointer"
       onClick={onClick}
     >
       <div className="flex w-full items-center justify-between">
         <div className="flex justify-between items-center">
           <Image
             className="border"
-            style={{ borderRadius: "100%" }}
+            style={{ borderRadius: "100%", border: "solid 1px white" }}
             width={40}
             height={40}
             alt={"t"}
@@ -70,7 +70,7 @@ const Transaction = ({
           </div>
           <div className="flex items-center">
             <Image
-              style={{ borderRadius: "100%" }}
+              style={{ borderRadius: "100%", border: "solid 1px white" }}
               width={40}
               height={40}
               alt={"t"}
@@ -87,7 +87,11 @@ const Transaction = ({
           </div>
         </div>
         <CardDescription>
-          <Badge variant="outline">{"$" + formattedNumber(priceHistory)}</Badge>
+          <Badge className="bg-white">
+            <p className="text-xs text-slate-900">
+              {"$" + formattedNumber(priceHistory)}
+            </p>
+          </Badge>
           {/* <br></br>
           {"$" + price + "(current)"}
           <br></br>
@@ -102,14 +106,14 @@ const Transaction = ({
       </div>
       {active && (
         <div>
-          <Separator decorative={false} border className="my-5" />
+          <Separator decorative={false} border className="my-7" />
           <div className="flex justify-between items-end">
             <div className="flex flex-col w-full gap-5">
-              <div className="grid full-w max-w-sm items-center gap-2.5">
-                <Label className="flex" htmlFor="decrease">
+              <div className="grid full-w items-center gap-2.5">
+                <Label className="flex mb-2" htmlFor="decrease">
                   If the price drops:
                   <p className="text-xs text-muted-foreground">
-                    &nbsp;-{sliderValue}%
+                    &nbsp; &nbsp;-{sliderValue}%
                   </p>
                 </Label>
                 <Slider
@@ -121,8 +125,8 @@ const Transaction = ({
 
                 {/* <Input type="number" id="decrease" placeholder="Price" /> */}
               </div>
-              <div className="grid w-full max-w-sm gap-2.5">
-                <Label htmlFor="decrease">Within</Label>
+              <div className="grid w-full gap-2.5">
+                <Label htmlFor="decrease">Within a</Label>
                 <RadioGroup
                   defaultValue="card"
                   className="grid grid-cols-3 gap-4"
@@ -172,8 +176,11 @@ const Transaction = ({
                 <Label htmlFor="decrease">I will get back</Label>
                 <p className="text-xs text-muted-foreground">0.02 SOL</p>
               </div>
+              <Button variant="secondary">
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Analyze transaction
+              </Button>
             </div>
-            <Button variant="default">Insure</Button>
           </div>
         </div>
       )}
