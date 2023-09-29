@@ -13,6 +13,7 @@ import { PriceServiceConnection } from "@pythnetwork/price-service-client";
 import { useConnection } from "@solana/wallet-adapter-react";
 import { pythTokens } from "@/lib/tokens";
 import { getTokenPrices, getTokenPriceHistory } from "@/lib/api";
+import { useSession } from "next-auth/react";
 
 interface IProps {
   data?: [];
@@ -20,10 +21,11 @@ interface IProps {
 }
 
 const Transactions = ({ data, tokenList }: IProps) => {
+  const { data: session } = useSession();
   const [tokenPrices, setTokenPrices] = useState([]);
   const { connection } = useConnection();
   const [activeIndex, setActiveIndex] = useState(0);
-
+  console.log(session);
   const pythClient = new PythHttpClient(
     connection,
     getPythProgramKeyForCluster("pythtest-crosschain"),
