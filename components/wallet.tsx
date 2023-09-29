@@ -1,6 +1,6 @@
 "use client";
 
-import React, { FC, useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import {
   ConnectionProvider,
   WalletProvider,
@@ -8,10 +8,11 @@ import {
 import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 import {
   WalletModalProvider,
-  WalletDisconnectButton,
   WalletMultiButton,
 } from "@solana/wallet-adapter-react-ui";
 import { clusterApiUrl } from "@solana/web3.js";
+import { type SolanaSignInInput } from "@solana/wallet-standard-features";
+import { signIn } from "next-auth/react";
 
 // Default styles that can be overridden by your app
 require("@solana/wallet-adapter-react-ui/styles.css");
@@ -46,9 +47,46 @@ const Wallet = ({ children }: IProps) => {
     [network],
   );
 
+  const autoSignIn = useCallback(async (adapter: Adapter) => {
+    // If the signIn feature is not available, return true
+    if (!("signIn" in adapter)) return true;
+
+    // Fetch the signInInput from the backend
+    const createResponse = await fetch("api/sign");
+    const input: SolanaSignInInput = await createResponse.json();
+
+    // Send the signInInput to the wallet and trigger a sign-in request
+    const output = await adapter.signIn(input);
+
+    // Verify the sign-in output against the generated input server-side
+    // NOTE: The output needs to be formatted with Array before sending to server side
+    let strPayload = JSON.stringify({
+      input,
+      output: {
+        account: {
+          address: output.account.address,
+          publicKey: Array.from(output.account.publicKey),
+        },
+        signature: Array.from(output["signature"]),
+        signedMessage: Array.from(output["signedMessage"]),
+      },
+    });
+
+    const success = await signIn("credentials", {
+      body: strPayload,
+      redirect: false,
+    });
+
+    console.log(success);
+    // If verification fails, throw an error
+    if (!success) throw new Error("Sign In verification failed!");
+
+    return false;
+  }, []);
+
   return (
     <ConnectionProvider endpoint={endpoint}>
-      <WalletProvider wallets={wallets} autoConnect>
+      <WalletProvider wallets={wallets} autoConnect={autoSignIn}>
         <WalletModalProvider>
           <WalletMultiButton />
           {children}
