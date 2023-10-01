@@ -8,6 +8,7 @@ import type {
 } from "@solana/wallet-standard-features";
 import type { AuthOptions } from "next-auth";
 import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
 
 export const authOptions: AuthOptions = {
   session: {
@@ -62,7 +63,7 @@ export const authOptions: AuthOptions = {
               },
             });
 
-            console.log(data);
+            // console.log(data);
             return {
               id: deconstructPayload.output.account?.address,
             };

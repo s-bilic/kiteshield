@@ -1,109 +1,157 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import Transaction from "./transaction";
 import { Separator } from "@/components/ui/separator";
-import {
-  PythConnection,
-  getPythProgramKeyForCluster,
-  PythHttpClient,
-} from "@pythnetwork/client";
-import { PriceServiceConnection } from "@pythnetwork/price-service-client";
-import { useConnection } from "@solana/wallet-adapter-react";
 import { pythTokens } from "@/lib/tokens";
-import { getTokenPrices, getTokenPriceHistory } from "@/lib/api";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface IProps {
   data?: [];
   tokenList?: [];
 }
 
-const Transactions = ({ data, tokenList }: IProps) => {
+const Transactions = ({ data, tokenList, insured }: IProps) => {
   const { data: session } = useSession();
-  const [tokenPrices, setTokenPrices] = useState([]);
-  const { connection } = useConnection();
-  const [activeIndex, setActiveIndex] = useState(0);
-  console.log(session);
-  const pythClient = new PythHttpClient(
-    connection,
-    getPythProgramKeyForCluster("pythtest-crosschain"),
-  );
+  const [t, setT] = useState([]);
+  const [insuredTransactions, setInsuredTransactions] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(null);
 
-  const fetchTokenPrices = async () => {
-    const data = await getTokenPrices(pythClient, pythTokens);
-    setTokenPrices(data);
+  const fetchTransactions = async () => {
+    setLoading(true);
+    const response = await fetch("http://localhost:3000/api/transactions", {
+      method: "POST",
+      body: JSON.stringify(session),
+    });
+    const data = await response.json();
+    setT(data);
+    setLoading(false);
   };
-
-  // const fetchTokenPriceHistory = async () => {
-  //   const d = await getTokenPriceHistory(
-  //     "ef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d",
-  //     "prevMonth",
-  //     true,
-  //   );
-
-  //   console.log(d);
-
-  //   return d;
-  // };
 
   const handleTransaction = (index) => {
     setActiveIndex(index);
   };
 
-  useEffect(() => {
-    fetchTokenPrices();
-  }, []);
+  const fetchInsuredTransactions = async () => {
+    const response = await fetch("http://localhost:3000/api/insured");
+    const data = await response.json();
+    setInsuredTransactions(data);
+    console.log(data);
+  };
 
-  const transactionsData = data?.map((item) => ({
-    ...item,
-    price: tokenPrices
-      ?.find((t) => t.mint === item?.token?.mint)
-      ?.price.toFixed(3),
-  }));
+  useEffect(() => {
+    fetchTransactions();
+
+    if (insured) {
+      fetchInsuredTransactions();
+    }
+
+    if (!session) {
+      setT([]);
+    }
+  }, [session]);
+
+  const LoadingSkeleton = () => (
+    <Card className="flex items-center space-x-4 p-5">
+      <div className="flex items-center gap-8">
+        <Skeleton className="h-12 w-12 rounded-full" />
+        <Skeleton className="h-12 w-12 rounded-full" />
+      </div>
+      <div className="space-y-2 w-full">
+        <Skeleton className="h-4" />
+        <Skeleton className="h-4" />
+      </div>
+    </Card>
+  );
 
   return (
     <div className="w-full">
-      {/* <h2 className="text-2xl font-bold tracking-tight">Latest transactions</h2>
-      <Separator decorative={false} className="my-1" />
-      <p className="text-xs text-muted-foreground">+201 since last hour</p>
-      <Separator decorative={false} className="my-2" /> */}
-
-      {transactionsData?.map((item, index) => (
-        <React.Fragment key={index}>
-          {index !== 0 && <Separator decorative={false} className="my-2" />}
-          <Transaction
-            logoSpend={
-              tokenList?.find(
-                (token) => token?.address === item?.tokenTransfers[0]?.mint,
-              )?.logoURI
-            }
-            logoReceived={
-              tokenList?.find(
-                (token) => token?.address === item?.tokenTransfers[1]?.mint,
-              )?.logoURI
-            }
-            nameSpend={
-              pythTokens?.find(
-                (token) => token?.mint === item?.tokenTransfers[0]?.mint,
-              )?.name
-            }
-            nameReceived={
-              pythTokens?.find(
-                (token) => token?.mint === item?.tokenTransfers[1]?.mint,
-              )?.name
-            }
-            transfer={item?.tokenTransfers}
-            token={item?.token}
-            type={item?.type}
-            price={item?.price}
-            priceHistory={item?.tokenPriceHistory?.price}
-            onClick={() => handleTransaction(index)}
-            active={activeIndex === index}
-          />
-        </React.Fragment>
-      ))}
+      <Button onClick={() => signOut({ redirect: false })}> Sign out</Button>
+      {loading &&
+        Array(5)
+          .fill()
+          ?.map((item, index) => (
+            <React.Fragment key={index}>
+              {index !== 0 && <Separator decorative={false} className="my-2" />}
+              <LoadingSkeleton />
+            </React.Fragment>
+          ))}
+      {!loading &&
+        !insured &&
+        t?.map((item, index) => (
+          <React.Fragment key={index}>
+            {index !== 0 && <Separator decorative={false} className="my-2" />}
+            <Transaction
+              logoSpend={
+                tokenList?.find(
+                  (token) => token?.address === item?.tokenTransfers[0]?.mint,
+                )?.logoURI
+              }
+              logoReceived={
+                tokenList?.find(
+                  (token) => token?.address === item?.tokenTransfers[1]?.mint,
+                )?.logoURI
+              }
+              nameSpend={
+                pythTokens?.find(
+                  (token) => token?.mint === item?.tokenTransfers[0]?.mint,
+                )?.name
+              }
+              nameReceived={
+                pythTokens?.find(
+                  (token) => token?.mint === item?.tokenTransfers[1]?.mint,
+                )?.name
+              }
+              transfer={item?.tokenTransfers}
+              token={item?.token}
+              type={item?.type}
+              price={item?.tokenPrice?.price}
+              timestamp={item?.timestamp}
+              signature={item?.signature}
+              priceHistory={item?.tokenPriceHistory?.price}
+              onClick={() => handleTransaction(index)}
+              active={activeIndex === index}
+            />
+          </React.Fragment>
+        ))}
+      {!loading &&
+        insured &&
+        insuredTransactions?.map((item, index) => (
+          <React.Fragment key={index}>
+            {index !== 0 && <Separator decorative={false} className="my-2" />}
+            <Transaction
+              logoSpend={
+                tokenList?.find((token) => token?.address === item?.spendToken)
+                  ?.logoURI
+              }
+              logoReceived={
+                tokenList?.find(
+                  (token) => token?.address === item?.receivedToken,
+                )?.logoURI
+              }
+              nameSpend={
+                tokenList?.find((token) => token?.address === item?.spendToken)
+                  ?.symbol
+              }
+              nameReceived={
+                tokenList?.find(
+                  (token) => token?.address === item?.receivedToken,
+                )?.symbol
+              }
+              transfer={item?.tokenTransfers}
+              spend={item?.spend}
+              received={item?.received}
+              price={item?.priceNow}
+              signature={item?.signature}
+              priceHistory={item?.price}
+              onClick={() => handleTransaction(index)}
+              active={activeIndex === index}
+            />
+          </React.Fragment>
+        ))}
     </div>
   );
 };

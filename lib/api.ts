@@ -12,10 +12,19 @@ const getTransactions = async (address: string) => {
   const response = await fetch(url);
   const data = await response.json();
 
-  return data.slice(0, 5);
+  return data?.slice(0, 5);
 };
 
-const getTokenPrices = async (client: any, acceptedTokens: any) => {
+const getTokenPrice = async (address: string) => {
+  const url = `https://hermes.pyth.network/api/latest_price_feeds?ids%5B%5D=${address}
+  `;
+  const response = await fetch(url);
+  const data = await response.json();
+
+  return data;
+};
+
+const getTokenPricesClient = async (client: any, acceptedTokens: any) => {
   const clientData = await client.getData();
 
   const data = acceptedTokens?.map((item: any) => ({
@@ -64,4 +73,10 @@ const getTokenPriceHistory = async (
   }
 };
 
-export { getTokenList, getTransactions, getTokenPrices, getTokenPriceHistory };
+export {
+  getTokenList,
+  getTransactions,
+  getTokenPrice,
+  getTokenPricesClient,
+  getTokenPriceHistory,
+};

@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Policy" ALTER COLUMN "range" SET DATA TYPE TEXT;

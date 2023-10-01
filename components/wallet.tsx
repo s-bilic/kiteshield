@@ -77,7 +77,7 @@ const Wallet = ({ children }: IProps) => {
       redirect: false,
     });
 
-    console.log(success);
+    // console.log(success);
     // If verification fails, throw an error
     if (!success) throw new Error("Sign In verification failed!");
 

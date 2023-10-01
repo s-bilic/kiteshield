@@ -11,8 +11,46 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  address   String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          Int           @id @default(autoincrement())
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  address     String        @unique
+  Transaction Transaction[]
+  Policy      Policy[]
+}
+
+model Transaction {
+  id                 Int      @id @default(autoincrement())
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  signature          String
+  timestamp          Int
+  userId             Int
+  user               User     @relation(fields: [userId], references: [id])
+  spend              Float
+  received           Float
+  spendToken         String
+  receivedToken      String
+  price              Float
+  priceNow           Float
+  volume             Float
+  dailyPriceChange   String
+  weeklyPriceChange  String
+  monthlyPriceChange String
+  insured            Boolean  @default(false)
+  Policy             Policy[]
+}
+
+model Policy {
+  id            Int         @id @default(autoincrement())
+  userId        Int
+  user          User        @relation(fields: [userId], references: [id])
+  transactionId Int
+  transaction   Transaction @relation(fields: [transactionId], references: [id])
+  premium       Float
+  claim         Float
+  claimPrice    Float
+  range         String
+  decrease      Float
+  risk          Float
 }
