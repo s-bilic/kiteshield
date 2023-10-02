@@ -5,9 +5,12 @@ import { getTokenList } from "@/lib/api";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { revalidatePath } from "next/cache";
+import InsuredTransactions from "@/components/insuredTransactions";
 
 export default async function Home() {
-  // const session = await getServerSession(authOptions);
+  const session = await getServerSession(authOptions);
+  const response = await fetch("http://localhost:3000/api/insured");
+  const insuredData = await response.json();
 
   // if (response) {
   //   console.log(JSON.stringify(response));
@@ -25,7 +28,7 @@ export default async function Home() {
           <Transactions tokenList={tokenList} />
         </TabsContent>
         <TabsContent value="password">
-          <Transactions tokenList={tokenList} insured />
+          <InsuredTransactions data={insuredData} tokenList={tokenList} />
         </TabsContent>
       </Tabs>
     </main>

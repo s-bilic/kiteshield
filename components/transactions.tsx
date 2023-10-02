@@ -7,52 +7,38 @@ import { Separator } from "@/components/ui/separator";
 import { pythTokens } from "@/lib/tokens";
 import { useSession, signOut } from "next-auth/react";
 import { Skeleton } from "@/components/ui/skeleton";
+import useSWR from "swr";
 
 interface IProps {
   data?: [];
   tokenList?: [];
 }
-
-const Transactions = ({ data, tokenList, insured }: IProps) => {
+const Transactions = ({ tokenList }: IProps) => {
   const { data: session } = useSession();
-  const [t, setT] = useState([]);
-  const [insuredTransactions, setInsuredTransactions] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [activeIndex, setActiveIndex] = useState(null);
 
-  const fetchTransactions = async () => {
-    setLoading(true);
-    const response = await fetch("http://localhost:3000/api/transactions", {
+  const fetcher = (url, data) =>
+    fetch("http://localhost:3000/api/transactions", {
       method: "POST",
       body: JSON.stringify(session),
-    });
-    const data = await response.json();
-    setT(data);
-    setLoading(false);
-  };
+    }).then((res) => res.json());
+
+  const {
+    data: transactions,
+    isLoading,
+    error,
+  } = useSWR(
+    session ? "http://localhost:3000/api/transactions" : null,
+    fetcher,
+    {
+      revalidateOnFocus: true, // This will revalidate the data when the page is focused
+      initialData: [], // You can provide initial data here if needed
+    },
+  );
 
   const handleTransaction = (index) => {
     setActiveIndex(index);
   };
-
-  const fetchInsuredTransactions = async () => {
-    const response = await fetch("http://localhost:3000/api/insured");
-    const data = await response.json();
-    setInsuredTransactions(data);
-    console.log(data);
-  };
-
-  useEffect(() => {
-    fetchTransactions();
-
-    if (insured) {
-      fetchInsuredTransactions();
-    }
-
-    if (!session) {
-      setT([]);
-    }
-  }, [session]);
 
   const LoadingSkeleton = () => (
     <Card className="flex items-center space-x-4 p-5">
@@ -70,7 +56,7 @@ const Transactions = ({ data, tokenList, insured }: IProps) => {
   return (
     <div className="w-full">
       <Button onClick={() => signOut({ redirect: false })}> Sign out</Button>
-      {loading &&
+      {isLoading &&
         Array(5)
           .fill()
           ?.map((item, index) => (
@@ -79,9 +65,8 @@ const Transactions = ({ data, tokenList, insured }: IProps) => {
               <LoadingSkeleton />
             </React.Fragment>
           ))}
-      {!loading &&
-        !insured &&
-        t?.map((item, index) => (
+      {!isLoading &&
+        transactions?.map((item, index) => (
           <React.Fragment key={index}>
             {index !== 0 && <Separator decorative={false} className="my-2" />}
             <Transaction
@@ -112,41 +97,6 @@ const Transactions = ({ data, tokenList, insured }: IProps) => {
               timestamp={item?.timestamp}
               signature={item?.signature}
               priceHistory={item?.tokenPriceHistory?.price}
-              onClick={() => handleTransaction(index)}
-              active={activeIndex === index}
-            />
-          </React.Fragment>
-        ))}
-      {!loading &&
-        insured &&
-        insuredTransactions?.map((item, index) => (
-          <React.Fragment key={index}>
-            {index !== 0 && <Separator decorative={false} className="my-2" />}
-            <Transaction
-              logoSpend={
-                tokenList?.find((token) => token?.address === item?.spendToken)
-                  ?.logoURI
-              }
-              logoReceived={
-                tokenList?.find(
-                  (token) => token?.address === item?.receivedToken,
-                )?.logoURI
-              }
-              nameSpend={
-                tokenList?.find((token) => token?.address === item?.spendToken)
-                  ?.symbol
-              }
-              nameReceived={
-                tokenList?.find(
-                  (token) => token?.address === item?.receivedToken,
-                )?.symbol
-              }
-              transfer={item?.tokenTransfers}
-              spend={item?.spend}
-              received={item?.received}
-              price={item?.priceNow}
-              signature={item?.signature}
-              priceHistory={item?.price}
               onClick={() => handleTransaction(index)}
               active={activeIndex === index}
             />

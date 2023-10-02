@@ -23,6 +23,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
+import { createTransaction } from "@/actions/actions";
+
 import {
   Form,
   FormControl,
@@ -104,7 +106,7 @@ const Transaction = ({
           />
           <div>
             <p className="text-s ml-2">
-              {formattedNumber(received ? received : transfer[0]?.tokenAmount)}
+              {formattedNumber(spend ? spend : transfer[0]?.tokenAmount)}
             </p>
             <p className="text-xs text-muted-foreground ml-2">{nameSpend}</p>
           </div>
@@ -161,7 +163,9 @@ const Transaction = ({
       {active && (
         <div>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)}>
+            <form
+              action={createTransaction.bind(null, signature, sliderValue[0])}
+            >
               <Separator decorative={false} border className="my-7" />
               <div className="flex justify-between items-end">
                 <div className="flex flex-col w-full gap-5">
@@ -182,6 +186,7 @@ const Transaction = ({
                     {/* <Input type="number" id="decrease" placeholder="Price" /> */}
                   </div>
                   <div className="grid w-full gap-2.5">
+                    <input name="text" />
                     <FormField
                       control={form.control}
                       name="range"
@@ -190,6 +195,7 @@ const Transaction = ({
                           <FormLabel>Within a</FormLabel>
                           <FormControl>
                             <RadioGroup
+                              name="range"
                               onValueChange={field.onChange}
                               defaultValue={field.value}
                               className="grid grid-cols-3 gap-4"

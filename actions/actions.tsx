@@ -1,16 +1,24 @@
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+"use server";
+
+import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { prisma } from "@/lib/prisma";
 
 const claimPrice = (price: number, decrease: number) => {
   return price - (price * decrease) / 100;
 };
 
-export async function POST(req: NextRequest, res: NextResponse) {
+const createTransaction = async (
+  signature: string,
+  decrease: number,
+  formData: FormData,
+) => {
   const session = await getServerSession(authOptions);
   const userAddress = session?.user?.name;
-  const data = await req.json();
+  console.log(session, "x");
+
+  const range = formData.get("range");
 
   const body = {
     user: {
@@ -26,7 +34,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
   const transactions = await response.json();
 
   const singleTransaction = transactions?.find(
-    (item: any) => item?.signature === data?.transaction?.signature,
+    (item: any) => item?.signature === signature,
   );
 
   const exists = await prisma.transaction.findFirst({
@@ -34,7 +42,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
       user: {
         address: userAddress as string,
       },
-      signature: data?.transaction?.signature,
+      signature: signature,
       insured: true,
     },
   });
@@ -65,11 +73,11 @@ export async function POST(req: NextRequest, res: NextResponse) {
           create: {
             premium: 20,
             claim: 40,
-            range: data?.policy?.range,
-            decrease: data?.policy?.decrease,
+            range: range as string,
+            decrease: decrease,
             claimPrice: claimPrice(
               singleTransaction?.tokenPrice?.price,
-              data?.policy?.decrease,
+              decrease,
             ),
             risk: 0.5,
             user: {
@@ -79,20 +87,9 @@ export async function POST(req: NextRequest, res: NextResponse) {
         },
       },
     });
-    return NextResponse.json(newTransaction);
+
+    revalidatePath("/");
   }
-}
+};
 
-export async function GET(req: NextRequest, res: NextResponse) {
-  const session = await getServerSession(authOptions);
-  const userAddress = session?.user?.name;
-
-  const data = await prisma.transaction.findMany({
-    where: {
-      user: {
-        address: userAddress as string,
-      },
-    },
-  });
-  return NextResponse.json(data);
-}
+export { createTransaction };
