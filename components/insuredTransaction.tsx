@@ -9,15 +9,10 @@ import { Button } from "./ui/button";
 import { Slider } from "./ui/slider";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { Badge } from "./ui/badge";
-import { Input } from "@/components/ui/input";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, Controller } from "react-hook-form";
 import * as z from "zod";
-import SendSolana from "@/lib/sendSolana";
-
-import { updateTransaction } from "@/actions/actions";
-
 import {
   Form,
   FormControl,
@@ -41,10 +36,7 @@ const InsuredTransaction = ({
   insured,
   onClick,
 }) => {
-  const { init, confirmed, signature: confirmSignature } = SendSolana();
   const [priceDropValue, setPriceDropValue] = useState([20]);
-  const [coverValue, setCoverValue] = useState([0]);
-  const [riskValue, setRiskValue] = useState({});
   const FormSchema = z.object({
     range: z.enum(["day", "week", "month"], {
       required_error: "Select your range period",
@@ -55,48 +47,6 @@ const InsuredTransaction = ({
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   });
-
-  const [isPending, startTransition] = useTransition();
-
-  const onSubmit = form.handleSubmit(
-    async (data: z.infer<typeof FormSchema>, event: any) => {
-      const body = {
-        signature: signature,
-        decrease: priceDropValue,
-        range: data?.range,
-      };
-      if (event?.nativeEvent?.submitter?.name === "risk_button") {
-        const response = await fetch("http://localhost:3000/api/risk", {
-          method: "POST",
-          body: JSON.stringify(body),
-        });
-        const risk = await response.json();
-        setRiskValue(risk);
-      }
-      if (event?.nativeEvent?.submitter?.name === "approve_button") {
-        console.log("Inside if block");
-        const response = await fetch("http://localhost:3000/api/approve", {
-          method: "POST",
-          body: JSON.stringify(body),
-        });
-        await response.json();
-        await init(0.1);
-        console.log(confirmSignature);
-
-        startTransition(() => {
-          updateTransaction(data);
-        });
-      }
-    },
-  );
-
-  // const onSubmit = form.handleSubmit(async (data, e) => {
-  //   console.log(data);
-  // startTransition(() => {
-  //   updateTransaction(data);
-  // });
-  // });
-
   const formattedNumber = (value: number) => {
     const data = Intl.NumberFormat("en-US", {
       notation: "compact",
@@ -105,11 +55,6 @@ const InsuredTransaction = ({
 
     return data;
   };
-
-  // // also needs on server side
-  // const transactionValue = priceHistory * transfer[1]?.tokenAmount;
-  // const insuredValue = (transactionValue * priceDropValue[0]) / 100;
-  // const insuredTokenValue = insuredValue / priceHistory;
 
   return (
     <Card
@@ -139,26 +84,6 @@ const InsuredTransaction = ({
           <div className="mx-4 border rounded-full p-1">
             <ArrowRight width={14} height={14} />
           </div>
-          {/* <div className="flex items-center">
-            <Image
-              style={{ borderRadius: "100%", border: "solid 1px white" }}
-              width={40}
-              height={40}
-              alt={"t"}
-              src={logoReceived}
-            />
-            <div>
-              <p className="text-s ml-2">
-                {formattedNumber(
-                  received ? received : transfer[1]?.tokenAmount,
-                )}
-                {` (${transactionValue.toFixed(2)}$)`}
-              </p>
-              <p className="text-xs text-muted-foreground ml-2">
-                {nameReceived}
-              </p>
-            </div>
-          </div> */}
         </div>
         <CardDescription>
           <Badge className="bg-white mx-2">
@@ -179,26 +104,13 @@ const InsuredTransaction = ({
               {"$" + formattedNumber(price)}
             </p>
           </Badge>
-          {/* <PriceChart
-            points={[
-              [12.40342549423265, 12.40342549423265],
-              [12.40342549423265, 12.60342549423265],
-            ]}
-          /> */}
         </CardDescription>
       </div>
 
       {active && (
         <div>
           <Form {...form}>
-            <form
-              onSubmit={onSubmit}
-              // action={createTransaction.bind(
-              //   null,
-              //   signature,
-              //   priceDropValue[0],
-              // )}
-            >
+            <form>
               <Separator decorative={false} border className="my-7" />
               <div className="flex justify-between items-end">
                 <div className="flex flex-col w-full gap-5">
@@ -224,7 +136,7 @@ const InsuredTransaction = ({
                       name="range"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Within a</FormLabel>s
+                          <FormLabel>Within a</FormLabel>
                           <FormControl>
                             <RadioGroup
                               name="range"
@@ -289,33 +201,6 @@ const InsuredTransaction = ({
                       {...form.register("signature")}
                     />
                   </div>
-                  {/* <div className="grid full-w items-center gap-2.5">
-                    <div className="grid w-full max-w-sm items-center jus gap-2.5">
-                      <Label htmlFor="decrease">Insures me</Label>
-                      <p className="text-xs text-muted-foreground">{`${insuredTokenValue.toFixed(
-                        4,
-                      )} SOL (${insuredValue.toFixed(4)}$) `}</p>
-                    </div>
-                  </div> */}
-                  {/* <div className="grid full-w items-center gap-2.5">
-                    <div className="grid w-full max-w-sm items-center jus gap-2.5">
-                      <Label htmlFor="decrease">Costs me</Label>
-                      <p className="text-xs text-rose-500">
-                        {riskValue?.premiumValue
-                          ? `${(riskValue?.premiumTokenValue).toFixed(
-                              4,
-                            )} SOL (${(riskValue?.premiumValue).toFixed(4)}$) `
-                          : `${(insuredTokenValue / 10).toFixed(4)} SOL (${(
-                              insuredValue / 10
-                            ).toFixed(4)}$) `}
-                        <Badge className="bg-white mx-2">
-                          <p className="text-xs text-slate-900">
-                            {"Risk: " + riskValue?.risk}
-                          </p>
-                        </Badge>
-                      </p>
-                    </div>
-                  </div> */}
                   <Button variant="secondary" type="submit" name="risk_button">
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Calculate risk
