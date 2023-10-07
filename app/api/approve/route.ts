@@ -73,47 +73,62 @@ export async function POST(req: NextRequest, res: NextResponse) {
 
   console.log(totalPremiumTokenValue);
 
-  const createRisk = await prisma.transaction.create({
-    data: {
-      updatedAt: new Date(),
-      signature: signature,
-      timestamp: singleTransaction?.timestamp,
-      price: price,
-      priceHistory: priceHistory,
-      spend: singleTransaction?.tokenTransfers[0]?.tokenAmount,
-      received: singleTransaction?.tokenTransfers[1]?.tokenAmount,
-      spendToken: singleTransaction?.tokenTransfers[0]?.mint,
-      receivedToken: singleTransaction?.tokenTransfers[1]?.mint,
+  const exists = await prisma.transaction.findFirst({
+    where: {
       user: {
-        connect: { address: userAddress as string },
+        address: userAddress as string,
       },
-      Policy: {
-        create: {
-          user: {
-            connect: { address: userAddress as string },
-          },
-          premium: totalPremiumTokenValue,
-          claim: insuredTokenValue,
-          claimPrice: calculateClaimPrice(priceType, decrease[0]),
-          risk: {
-            create: {
-              updatedAt: new Date(),
-              dailyPriceChange: calculatePriceChange(price, dailyPriceChange),
-              weeklyPriceChange: calculatePriceChange(price, weeklyPriceChange),
-              monthlyPriceChange: calculatePriceChange(
-                price,
-                monthlyPriceChange,
-              ),
-              range: range,
-              decrease: decrease[0],
-              factor: riskFactor,
+      signature: signature,
+    },
+  });
+
+  if (exists) {
+    console.error("An insured transaction already exists for this user.");
+  } else {
+    const createRisk = await prisma.transaction.create({
+      data: {
+        updatedAt: new Date(),
+        signature: signature,
+        timestamp: singleTransaction?.timestamp,
+        price: price,
+        priceHistory: priceHistory,
+        spend: singleTransaction?.tokenTransfers[0]?.tokenAmount,
+        received: singleTransaction?.tokenTransfers[1]?.tokenAmount,
+        spendToken: singleTransaction?.tokenTransfers[0]?.mint,
+        receivedToken: singleTransaction?.tokenTransfers[1]?.mint,
+        user: {
+          connect: { address: userAddress as string },
+        },
+        Policy: {
+          create: {
+            user: {
+              connect: { address: userAddress as string },
+            },
+            premium: totalPremiumTokenValue,
+            claim: insuredTokenValue,
+            claimPrice: calculateClaimPrice(priceType, decrease[0]),
+            risk: {
+              create: {
+                updatedAt: new Date(),
+                dailyPriceChange: calculatePriceChange(price, dailyPriceChange),
+                weeklyPriceChange: calculatePriceChange(
+                  price,
+                  weeklyPriceChange,
+                ),
+                monthlyPriceChange: calculatePriceChange(
+                  price,
+                  monthlyPriceChange,
+                ),
+                range: range,
+                decrease: decrease[0],
+                factor: riskFactor,
+              },
             },
           },
         },
       },
-    },
-  });
-
-  console.log(createRisk);
-  return NextResponse.json(createRisk);
+    });
+    console.log(createRisk);
+    return NextResponse.json(createRisk);
+  }
 }

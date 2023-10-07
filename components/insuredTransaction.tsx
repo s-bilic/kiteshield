@@ -26,8 +26,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-
-const Transaction = ({
+const InsuredTransaction = ({
   logoSpend,
   logoReceived,
   nameSpend,
@@ -39,6 +38,7 @@ const Transaction = ({
   signature,
   spend,
   received,
+  insured,
   onClick,
 }) => {
   const { init, confirmed, signature: confirmSignature } = SendSolana();
@@ -106,14 +106,18 @@ const Transaction = ({
     return data;
   };
 
-  // also needs on server side
-  const transactionValue = priceHistory * transfer[1]?.tokenAmount;
-  const insuredValue = (transactionValue * priceDropValue[0]) / 100;
-  const insuredTokenValue = insuredValue / priceHistory;
+  // // also needs on server side
+  // const transactionValue = priceHistory * transfer[1]?.tokenAmount;
+  // const insuredValue = (transactionValue * priceDropValue[0]) / 100;
+  // const insuredTokenValue = insuredValue / priceHistory;
 
   return (
     <Card
-      className="p-5 hover:border-white hover:cursor-pointer"
+      className={
+        insured
+          ? "p-5 hover:border-white border-indigo-500 hover:cursor-pointer"
+          : "p-5 hover:border-white hover:cursor-pointer"
+      }
       onClick={onClick}
     >
       <div className="flex w-full items-center justify-between">
@@ -135,7 +139,7 @@ const Transaction = ({
           <div className="mx-4 border rounded-full p-1">
             <ArrowRight width={14} height={14} />
           </div>
-          <div className="flex items-center">
+          {/* <div className="flex items-center">
             <Image
               style={{ borderRadius: "100%", border: "solid 1px white" }}
               width={40}
@@ -154,7 +158,7 @@ const Transaction = ({
                 {nameReceived}
               </p>
             </div>
-          </div>
+          </div> */}
         </div>
         <CardDescription>
           <Badge className="bg-white mx-2">
@@ -187,7 +191,14 @@ const Transaction = ({
       {active && (
         <div>
           <Form {...form}>
-            <form onSubmit={onSubmit}>
+            <form
+              onSubmit={onSubmit}
+              // action={createTransaction.bind(
+              //   null,
+              //   signature,
+              //   priceDropValue[0],
+              // )}
+            >
               <Separator decorative={false} border className="my-7" />
               <div className="flex justify-between items-end">
                 <div className="flex flex-col w-full gap-5">
@@ -278,15 +289,15 @@ const Transaction = ({
                       {...form.register("signature")}
                     />
                   </div>
-                  <div className="grid full-w items-center gap-2.5">
+                  {/* <div className="grid full-w items-center gap-2.5">
                     <div className="grid w-full max-w-sm items-center jus gap-2.5">
                       <Label htmlFor="decrease">Insures me</Label>
                       <p className="text-xs text-muted-foreground">{`${insuredTokenValue.toFixed(
                         4,
                       )} SOL (${insuredValue.toFixed(4)}$) `}</p>
                     </div>
-                  </div>
-                  <div className="grid full-w items-center gap-2.5">
+                  </div> */}
+                  {/* <div className="grid full-w items-center gap-2.5">
                     <div className="grid w-full max-w-sm items-center jus gap-2.5">
                       <Label htmlFor="decrease">Costs me</Label>
                       <p className="text-xs text-rose-500">
@@ -304,7 +315,7 @@ const Transaction = ({
                         </Badge>
                       </p>
                     </div>
-                  </div>
+                  </div> */}
                   <Button variant="secondary" type="submit" name="risk_button">
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Calculate risk
@@ -336,4 +347,4 @@ const Transaction = ({
   );
 };
 
-export default Transaction;
+export default InsuredTransaction;
