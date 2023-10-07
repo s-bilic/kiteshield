@@ -8,14 +8,22 @@ import { pythTokens } from "@/lib/tokens";
 import { useSession, signOut } from "next-auth/react";
 import { Skeleton } from "@/components/ui/skeleton";
 import useSWR from "swr";
+import { useWallet } from "@solana/wallet-adapter-react";
 
 interface IProps {
   data?: [];
   tokenList?: [];
 }
 const Transactions = ({ tokenList }: IProps) => {
+  const { connected, disconnect } = useWallet();
   const { data: session } = useSession();
   const [activeIndex, setActiveIndex] = useState(null);
+
+  useEffect(() => {
+    if (connected && !session) {
+      disconnect();
+    }
+  }, [session]);
 
   const fetcher = (url, data) =>
     fetch("http://localhost:3000/api/transactions", {
