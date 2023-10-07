@@ -6,15 +6,17 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { revalidatePath } from "next/cache";
 import InsuredTransactions from "@/components/insuredTransactions";
+// import { AIResponse } from "@/lib/ai";
 
 export default async function Home() {
   const session = await getServerSession(authOptions);
+  // const r = await AIResponse("1,000,000", "3%");
+  // if (r) {
+  //   console.log("xx", JSON.stringify(r));
+  // }
   const response = await fetch("http://localhost:3000/api/insured");
   const insuredData = await response.json();
 
-  // if (response) {
-  //   console.log(JSON.stringify(response));
-  // }
   const tokenList = await getTokenList();
 
   return (

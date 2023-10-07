@@ -49,9 +49,18 @@ const chain = new LLMChain({
   outputParser: outputFixingParser,
 });
 
-const response = await chain.call({
-  daily_volume: "1,000,000",
-  daily_change: "3%",
-});
+// const response = await chain.call({
+//   daily_volume: "1,000,000",
+//   daily_change: "3%",
+// });
 
-export { response };
+const AIResponse = async (a, b) => {
+  const response = await chain.call({
+    daily_volume: a,
+    daily_change: b,
+  });
+
+  return response;
+};
+
+export { AIResponse };

@@ -4,10 +4,8 @@ import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/lib/prisma";
-
-const claimPrice = (price: number, decrease: number) => {
-  return price - (price * decrease) / 100;
-};
+import { calculateClaimPrice, calculatePriceChange } from "@/lib/utils";
+import { getTokenPriceHistory } from "@/lib/api";
 
 const createTransaction = async (
   signature: string,
@@ -16,8 +14,6 @@ const createTransaction = async (
 ) => {
   const session = await getServerSession(authOptions);
   const userAddress = session?.user?.name;
-  console.log(session, "x");
-
   const range = formData.get("range");
 
   const body = {
@@ -35,6 +31,37 @@ const createTransaction = async (
 
   const singleTransaction = transactions?.find(
     (item: any) => item?.signature === signature,
+  );
+
+  const { tokenPrice, tokenPriceHistory, token } = singleTransaction;
+
+  // Decide which price point is used to calculate the claimPrice
+  // The claimPrice is the price point which makes the user eligible for the insurance claim
+  const price = Number(tokenPrice?.price);
+  const priceHistory = Number(tokenPriceHistory?.price);
+  const priceType =
+    price < priceHistory
+      ? price
+      : price > priceHistory
+      ? priceHistory
+      : price === priceHistory
+      ? null
+      : null;
+
+  const dailyPriceChange = await getTokenPriceHistory(
+    token?.id,
+    "prevDay",
+    true,
+  );
+  const weeklyPriceChange = await getTokenPriceHistory(
+    token?.id,
+    "prevWeek",
+    true,
+  );
+  const monthlyPriceChange = await getTokenPriceHistory(
+    token?.id,
+    "prevMonth",
+    true,
   );
 
   const exists = await prisma.transaction.findFirst({
@@ -55,12 +82,8 @@ const createTransaction = async (
         signature: singleTransaction?.signature,
         updatedAt: new Date(),
         timestamp: singleTransaction?.timestamp,
-        price: Number(singleTransaction?.tokenPriceHistory?.price),
-        priceNow: Number(singleTransaction?.tokenPrice?.price),
-        volume: 1000000,
-        dailyPriceChange: "5%",
-        weeklyPriceChange: "10%",
-        monthlyPriceChange: "15%",
+        price: Number(singleTransaction?.tokenPrice?.price),
+        priceHistory: Number(singleTransaction?.tokenPriceHistory?.price),
         spend: singleTransaction?.tokenTransfers[0]?.tokenAmount,
         received: singleTransaction?.tokenTransfers[1]?.tokenAmount,
         spendToken: singleTransaction?.tokenTransfers[0]?.mint,
@@ -73,13 +96,13 @@ const createTransaction = async (
           create: {
             premium: 20,
             claim: 40,
+            claimPrice: calculateClaimPrice(priceType, decrease),
             range: range as string,
             decrease: decrease,
-            claimPrice: claimPrice(
-              singleTransaction?.tokenPrice?.price,
-              decrease,
-            ),
-            risk: 0.5,
+            dailyPriceChange: calculatePriceChange(price, dailyPriceChange),
+            weeklyPriceChange: calculatePriceChange(price, weeklyPriceChange),
+            monthlyPriceChange: calculatePriceChange(price, monthlyPriceChange),
+            // risk: 0.5,
             user: {
               connect: { address: userAddress as string },
             },

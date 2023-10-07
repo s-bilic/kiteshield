@@ -20,37 +20,45 @@ model User {
 }
 
 model Transaction {
-  id                 Int      @id @default(autoincrement())
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-  signature          String
-  timestamp          Int
-  userId             Int
-  user               User     @relation(fields: [userId], references: [id])
-  spend              Float
-  received           Float
-  spendToken         String
-  receivedToken      String
-  price              Float
-  priceNow           Float
-  volume             Float
-  dailyPriceChange   String
-  weeklyPriceChange  String
-  monthlyPriceChange String
-  insured            Boolean  @default(false)
-  Policy             Policy[]
+  id            Int      @id @default(autoincrement())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  signature     String
+  timestamp     Int
+  userId        Int
+  user          User     @relation(fields: [userId], references: [id])
+  spend         Float
+  received      Float
+  spendToken    String
+  receivedToken String
+  price         Float
+  priceHistory  Float
+  insured       Boolean  @default(false)
+  Policy        Policy[]
 }
 
 model Policy {
-  id            Int         @id @default(autoincrement())
-  userId        Int
-  user          User        @relation(fields: [userId], references: [id])
-  transactionId Int
-  transaction   Transaction @relation(fields: [transactionId], references: [id])
-  premium       Float
-  claim         Float
-  claimPrice    Float
-  range         String
-  decrease      Float
-  risk          Float
+  id                 Int         @id @default(autoincrement())
+  userId             Int
+  user               User        @relation(fields: [userId], references: [id])
+  transactionId      Int
+  transaction        Transaction @relation(fields: [transactionId], references: [id])
+  premium            Float
+  claim              Float
+  claimPrice         Float
+  risk               Risk?       @relation(fields: [riskId], references: [id])
+  riskId             Int?
+}
+
+model Risk {
+  id                 Int      @id @default(autoincrement())
+  dailyPriceChange   String
+  weeklyPriceChange  String
+  monthlyPriceChange String
+  range              String
+  decrease           Int
+  factor             Float
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  Policy             Policy[]
 }

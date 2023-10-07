@@ -3,18 +3,9 @@ import { ArrowRight, Loader2 } from "lucide-react";
 import PriceChart from "./priceChart";
 import Image from "next/image";
 import { Card, CardDescription } from "./ui/card";
-import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Separator } from "./ui/separator";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "./ui/select";
 import { Button } from "./ui/button";
-import { Toggle } from "./ui/toggle";
 import { Slider } from "./ui/slider";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { Badge } from "./ui/badge";
@@ -48,8 +39,9 @@ const Transaction = ({
   received,
   onClick,
 }) => {
-  const [sliderValue, setSliderValue] = useState([20]);
-
+  const [priceDropValue, setPriceDropValue] = useState([20]);
+  const [coverValue, setCoverValue] = useState([0]);
+  const [riskValue, setRiskValue] = useState({});
   const FormSchema = z.object({
     range: z.enum(["day", "week", "month"], {
       required_error: "Select your range period",
@@ -60,25 +52,33 @@ const Transaction = ({
     resolver: zodResolver(FormSchema),
   });
 
-  function onSubmit(data: z.infer<typeof FormSchema>) {
-    const formData = {
-      transaction: {
-        signature: signature,
-        updatedAt: new Date(),
-      },
-      policy: {
-        range: data?.range,
-        decrease: sliderValue[0],
-      },
+  const handleForm = async (data: z.infer<typeof FormSchema>, event: any) => {
+    const body = {
+      signature: signature,
+      decrease: priceDropValue,
+      range: data?.range,
     };
 
-    fetch("api/insured", {
-      method: "POST",
-      body: JSON.stringify(formData),
-    });
+    if (event?.nativeEvent?.submitter?.name === "risk_button") {
+      const response = await fetch("http://localhost:3000/api/risk", {
+        method: "POST",
+        body: JSON.stringify(body),
+      });
+      const risk = await response.json();
 
-    console.log(formData);
-  }
+      setRiskValue(risk);
+    }
+
+    if (event?.nativeEvent?.submitter?.name === "approve_button") {
+      console.log("Inside if block");
+      const response = await fetch("http://localhost:3000/api/approve", {
+        method: "POST",
+        body: JSON.stringify(body),
+      });
+
+      const approve = await response.json();
+    }
+  };
 
   const formattedNumber = (value: number) => {
     const data = Intl.NumberFormat("en-US", {
@@ -88,6 +88,11 @@ const Transaction = ({
 
     return data;
   };
+
+  // also needs on server side
+  const transactionValue = priceHistory * transfer[1]?.tokenAmount;
+  const insuredValue = (transactionValue * priceDropValue[0]) / 100;
+  const insuredTokenValue = insuredValue / priceHistory;
 
   return (
     <Card
@@ -126,6 +131,7 @@ const Transaction = ({
                 {formattedNumber(
                   received ? received : transfer[1]?.tokenAmount,
                 )}
+                {` (${transactionValue.toFixed(2)}$)`}
               </p>
               <p className="text-xs text-muted-foreground ml-2">
                 {nameReceived}
@@ -164,29 +170,33 @@ const Transaction = ({
         <div>
           <Form {...form}>
             <form
-              action={createTransaction.bind(null, signature, sliderValue[0])}
+              onSubmit={form.handleSubmit(handleForm)}
+              // action={createTransaction.bind(
+              //   null,
+              //   signature,
+              //   priceDropValue[0],
+              // )}
             >
               <Separator decorative={false} border className="my-7" />
               <div className="flex justify-between items-end">
                 <div className="flex flex-col w-full gap-5">
                   <div className="grid full-w items-center gap-2.5">
                     <Label className="flex mb-2" htmlFor="decrease">
-                      If the price drops:
-                      <p className="text-xs text-muted-foreground">
-                        &nbsp; &nbsp;-{sliderValue}%
-                      </p>
+                      <div className="grid w-full max-w-sm items-center jus gap-2.5">
+                        <Label htmlFor="decrease">
+                          When the price goes down by
+                        </Label>
+                        <p className="text-xs text-muted-foreground">{`-${priceDropValue}%`}</p>
+                      </div>
                     </Label>
                     <Slider
-                      defaultValue={sliderValue}
+                      defaultValue={priceDropValue}
                       max={100}
                       step={1}
-                      onValueChange={(e) => setSliderValue(e)}
+                      onValueChange={(e) => setPriceDropValue(e)}
                     />
-
-                    {/* <Input type="number" id="decrease" placeholder="Price" /> */}
                   </div>
                   <div className="grid w-full gap-2.5">
-                    <input name="text" />
                     <FormField
                       control={form.control}
                       name="range"
@@ -252,14 +262,59 @@ const Transaction = ({
                       )}
                     />
                   </div>
-                  <div className="grid w-full max-w-sm items-center jus gap-2.5">
-                    <Label htmlFor="decrease">I will get back</Label>
-                    <p className="text-xs text-muted-foreground">0.02 SOL</p>
+                  <div className="grid full-w items-center gap-2.5">
+                    <div className="grid w-full max-w-sm items-center jus gap-2.5">
+                      <Label htmlFor="decrease">Insures me</Label>
+                      <p className="text-xs text-muted-foreground">{`${insuredTokenValue.toFixed(
+                        4,
+                      )} SOL (${insuredValue.toFixed(4)}$) `}</p>
+                    </div>
                   </div>
-                  <Button variant="secondary" type="submit">
+                  <div className="grid full-w items-center gap-2.5">
+                    <div className="grid w-full max-w-sm items-center jus gap-2.5">
+                      <Label htmlFor="decrease">Costs me</Label>
+                      <p className="text-xs text-rose-500">
+                        {riskValue?.premiumValue
+                          ? `${(riskValue?.premiumTokenValue).toFixed(
+                              4,
+                            )} SOL (${(riskValue?.premiumValue).toFixed(4)}$) `
+                          : `${(insuredTokenValue / 10).toFixed(4)} SOL (${(
+                              insuredValue / 10
+                            ).toFixed(4)}$) `}
+                        <Badge className="bg-white mx-2">
+                          <p className="text-xs text-slate-900">
+                            {"Risk: " + riskValue?.risk}
+                          </p>
+                        </Badge>
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="secondary"
+                    type="submit"
+                    name="risk_button"
+                    onClick={handleForm}
+                  >
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Analyze transaction
+                    Calculate risk
                   </Button>
+                  <div className="flex-col">
+                    <Button
+                      className={"w-full"}
+                      variant="secondary"
+                      name="approve_button"
+                      type="submit"
+                    >
+                      Approve
+                    </Button>
+                    <Button
+                      className={"w-full"}
+                      variant="destructive"
+                      type="submit"
+                    >
+                      Decline
+                    </Button>
+                  </div>
                 </div>
               </div>
             </form>
