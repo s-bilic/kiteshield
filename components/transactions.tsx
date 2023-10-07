@@ -1,29 +1,19 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import Transaction from "./transaction";
 import { Separator } from "@/components/ui/separator";
 import { pythTokens } from "@/lib/tokens";
-import { useSession, signOut } from "next-auth/react";
 import { Skeleton } from "@/components/ui/skeleton";
 import useSWR from "swr";
-import { useWallet } from "@solana/wallet-adapter-react";
 
 interface IProps {
-  data?: [];
   tokenList?: [];
+  session?: {};
 }
-const Transactions = ({ tokenList }: IProps) => {
-  const { connected, disconnect } = useWallet();
-  const { data: session } = useSession();
+const Transactions = ({ tokenList, session }: IProps) => {
   const [activeIndex, setActiveIndex] = useState(null);
-
-  useEffect(() => {
-    if (connected && !session) {
-      disconnect();
-    }
-  }, [session]);
 
   const fetcher = (url, data) =>
     fetch("http://localhost:3000/api/transactions", {
@@ -63,7 +53,6 @@ const Transactions = ({ tokenList }: IProps) => {
 
   return (
     <div className="w-full">
-      <Button onClick={() => signOut({ redirect: false })}> Sign out</Button>
       {isLoading &&
         Array(5)
           .fill()

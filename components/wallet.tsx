@@ -15,14 +15,12 @@ import { type SolanaSignInInput } from "@solana/wallet-standard-features";
 import { signIn } from "next-auth/react";
 // Default styles that can be overridden by your app
 require("@solana/wallet-adapter-react-ui/styles.css");
-import { useSession } from "next-auth/react";
 
 interface IProps {
   children?: React.ReactNode;
 }
 
 const Wallet = ({ children }: IProps) => {
-  const { data: session } = useSession();
   // The network can be set to 'devnet', 'testnet', or 'mainnet-beta'.
   const network = WalletAdapterNetwork.Devnet;
 
@@ -51,10 +49,6 @@ const Wallet = ({ children }: IProps) => {
   const autoSignIn = useCallback(async (adapter: Adapter) => {
     // If the signIn feature is not available, return true
     if (!("signIn" in adapter)) return true;
-
-    if (session) {
-      return adapter.autoConnect();
-    }
 
     // Fetch the signInInput from the backend
     const createResponse = await fetch("api/sign");

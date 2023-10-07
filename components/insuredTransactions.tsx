@@ -10,7 +10,7 @@ interface IProps {
   tokenList?: [];
 }
 
-const InsuredTransactions = ({ data, tokenList }: IProps) => {
+const InsuredTransactions = ({ data, tokenList, session }: IProps) => {
   const [activeIndex, setActiveIndex] = useState(null);
   const handleTransaction = (index) => {
     setActiveIndex(index);
@@ -18,8 +18,6 @@ const InsuredTransactions = ({ data, tokenList }: IProps) => {
 
   return (
     <div className="w-full">
-      <Button onClick={() => signOut({ redirect: false })}> Sign out</Button>
-
       {data?.map((item, index) => (
         <React.Fragment key={index}>
           {index !== 0 && <Separator decorative={false} className="my-2" />}

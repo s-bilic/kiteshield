@@ -213,7 +213,7 @@ const Transaction = ({
                       name="range"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Within a</FormLabel>s
+                          <FormLabel>Within a</FormLabel>
                           <FormControl>
                             <RadioGroup
                               name="range"
