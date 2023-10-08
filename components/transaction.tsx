@@ -26,7 +26,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { fetcher } from "@/lib/utils";
 
 const Transaction = ({
   logoSpend,
@@ -42,9 +41,11 @@ const Transaction = ({
   received,
   onClick,
 }) => {
+  const [status, setStatus] = useState("risk");
+  const [loading, setLoading] = useState(false);
   const { init, confirmed, signature: confirmSignature } = SendSolana();
   const [priceDropValue, setPriceDropValue] = useState([20]);
-  const [coverValue, setCoverValue] = useState([0]);
+
   const [riskValue, setRiskValue] = useState({});
   const FormSchema = z.object({
     range: z.enum(["day", "week", "month"], {
@@ -57,8 +58,6 @@ const Transaction = ({
     resolver: zodResolver(FormSchema),
   });
 
-  const [isPending, startTransition] = useTransition();
-
   const onSubmit = form.handleSubmit(
     async (data: z.infer<typeof FormSchema>, event: any) => {
       const body = {
@@ -68,38 +67,53 @@ const Transaction = ({
       };
 
       if (event?.nativeEvent?.submitter?.name === "risk_button") {
-        const response = await fetch("http://localhost:3000/api/risk", {
-          method: "POST",
-          body: JSON.stringify(body),
-        });
-        const risk = await response.json();
-
-        setRiskValue(risk);
+        try {
+          setLoading(true);
+          setStatus("risk");
+          const response = await fetch("http://localhost:3000/api/risk", {
+            method: "POST",
+            body: JSON.stringify(body),
+          });
+          const risk = await response.json();
+          setRiskValue(risk);
+          setStatus("approving");
+          setLoading(false);
+        } catch (e) {
+          console.log(e);
+          setStatus("risk");
+          setLoading(false);
+        }
       }
 
       if (event?.nativeEvent?.submitter?.name === "approve_button") {
-        console.log("Inside if block");
-        const approveResponse = await fetch(
-          "http://localhost:3000/api/approve",
-          {
-            method: "POST",
-            body: JSON.stringify(body),
-          },
-        );
+        try {
+          setLoading(true);
+          const approveResponse = await fetch(
+            "http://localhost:3000/api/approve",
+            {
+              method: "POST",
+              body: JSON.stringify(body),
+            },
+          );
 
-        await approveResponse.json();
-        await init(0.1);
-        console.log(confirmSignature);
+          await approveResponse.json();
+          await init(0.1);
+          const insureResponse = await fetch(
+            "http://localhost:3000/api/insured",
+            {
+              method: "POST",
+              body: JSON.stringify(body),
+            },
+          );
 
-        const insureResponse = await fetch(
-          "http://localhost:3000/api/insured",
-          {
-            method: "POST",
-            body: JSON.stringify(body),
-          },
-        );
-
-        await insureResponse.json();
+          await insureResponse.json();
+          setStatus("risk");
+          setLoading(false);
+        } catch (e) {
+          setStatus("risk");
+          setLoading(false);
+          console.log(e);
+        }
       }
     },
   );
@@ -312,27 +326,41 @@ const Transaction = ({
                       </p>
                     </div>
                   </div>
-                  <Button variant="secondary" type="submit" name="risk_button">
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Calculate risk
-                  </Button>
-                  <div className="flex-col">
+                  {status === "risk" && (
                     <Button
-                      className={"w-full"}
                       variant="secondary"
-                      name="approve_button"
                       type="submit"
+                      name="risk_button"
                     >
-                      Approve
+                      {loading && (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      )}
+                      Calculate risk
                     </Button>
-                    <Button
-                      className={"w-full"}
-                      variant="destructive"
-                      type="submit"
-                    >
-                      Decline
-                    </Button>
-                  </div>
+                  )}
+                  {status === "approving" && (
+                    <div className="flex-col">
+                      <Button
+                        className={"w-full"}
+                        variant="secondary"
+                        name="approve_button"
+                        type="submit"
+                      >
+                        {loading && (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        )}
+                        Approve
+                      </Button>
+                      <Button
+                        className={"w-full"}
+                        variant="destructive"
+                        type="submit"
+                        onClick={() => setStatus("risk")}
+                      >
+                        Decline
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
             </form>
