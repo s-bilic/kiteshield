@@ -1,24 +1,37 @@
 "use client";
+
 import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import Transaction from "./transaction";
 import InsuredTransaction from "./insuredTransaction";
 import { Separator } from "@/components/ui/separator";
-import { useSession, signOut } from "next-auth/react";
+import useSWR from "swr";
+
 interface IProps {
-  data?: [];
   tokenList?: [];
+  session?: {};
 }
 
-const InsuredTransactions = ({ data, tokenList, session }: IProps) => {
+const InsuredTransactions = ({ tokenList, session }: IProps) => {
   const [activeIndex, setActiveIndex] = useState(null);
   const handleTransaction = (index) => {
     setActiveIndex(index);
   };
 
+  const fetcher = (url) => fetch(url).then((res) => res.json());
+
+  const apiUrl = session ? "http://localhost:3000/api/insured" : null;
+
+  const {
+    data: insuredData,
+    isLoading,
+    error,
+  } = useSWR(apiUrl, fetcher, {
+    revalidateOnFocus: true,
+    initialData: [], // Provide the appropriate initial data structure
+  });
+
   return (
     <div className="w-full">
-      {data?.map((item, index) => (
+      {insuredData?.map((item, index) => (
         <React.Fragment key={index}>
           {index !== 0 && <Separator decorative={false} className="my-2" />}
           {item?.insured && (

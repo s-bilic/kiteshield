@@ -23,22 +23,22 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const session = await getServerSession(authOptions);
-
+  console.log(session);
   return (
     <html lang="en">
       <body className={inter.className}>
-        <ClientProvider session={session}>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="dark"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <Wallet>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <Wallet>
+            <ClientProvider session={session}>
               <div className="p-5 mx-auto w-[680px]">{children}</div>
-            </Wallet>
-          </ThemeProvider>
-        </ClientProvider>
+            </ClientProvider>
+          </Wallet>
+        </ThemeProvider>
       </body>
     </html>
   );

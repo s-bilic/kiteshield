@@ -16,7 +16,7 @@ export async function GET() {
 
   const signInData: SolanaSignInInput = {
     // domain,
-    address: "ARLQYuL9HEoUtBXpDG26YyvGUAnHJfYbLSstvrm1vS24",
+    // address: "ARLQYuL9HEoUtBXpDG26YyvGUAnHJfYbLSstvrm1vS24",
     statement:
       "Clicking Sign or Approve only means you have proved this wallet is owned by you. This request will not trigger any blockchain transaction or cost any gas fee.",
     version: "1",

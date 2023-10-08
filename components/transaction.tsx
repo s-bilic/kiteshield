@@ -16,7 +16,7 @@ import { useForm, Controller } from "react-hook-form";
 import * as z from "zod";
 import SendSolana from "@/lib/sendSolana";
 
-import { updateTransaction } from "@/actions/actions";
+// import { updateTransaction } from "@/actions/actions";
 
 import {
   Form,
@@ -65,6 +65,7 @@ const Transaction = ({
         decrease: priceDropValue,
         range: data?.range,
       };
+
       if (event?.nativeEvent?.submitter?.name === "risk_button") {
         const response = await fetch("http://localhost:3000/api/risk", {
           method: "POST",
@@ -73,29 +74,33 @@ const Transaction = ({
         const risk = await response.json();
         setRiskValue(risk);
       }
+
       if (event?.nativeEvent?.submitter?.name === "approve_button") {
         console.log("Inside if block");
-        const response = await fetch("http://localhost:3000/api/approve", {
-          method: "POST",
-          body: JSON.stringify(body),
-        });
-        await response.json();
+        const approveResponse = await fetch(
+          "http://localhost:3000/api/approve",
+          {
+            method: "POST",
+            body: JSON.stringify(body),
+          },
+        );
+
+        await approveResponse.json();
         await init(0.1);
         console.log(confirmSignature);
 
-        startTransition(() => {
-          updateTransaction(data);
-        });
+        const insureResponse = await fetch(
+          "http://localhost:3000/api/insured",
+          {
+            method: "POST",
+            body: JSON.stringify(body),
+          },
+        );
+
+        await insureResponse.json();
       }
     },
   );
-
-  // const onSubmit = form.handleSubmit(async (data, e) => {
-  //   console.log(data);
-  // startTransition(() => {
-  //   updateTransaction(data);
-  // });
-  // });
 
   const formattedNumber = (value: number) => {
     const data = Intl.NumberFormat("en-US", {

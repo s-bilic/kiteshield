@@ -4,9 +4,11 @@ import React, { useCallback, useEffect, useMemo } from "react";
 import {
   ConnectionProvider,
   WalletProvider,
+  useWallet,
 } from "@solana/wallet-adapter-react";
 import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 import {
+  WalletConnectButton,
   WalletModalProvider,
   WalletMultiButton,
 } from "@solana/wallet-adapter-react-ui";
@@ -15,12 +17,16 @@ import { type SolanaSignInInput } from "@solana/wallet-standard-features";
 import { signIn } from "next-auth/react";
 // Default styles that can be overridden by your app
 require("@solana/wallet-adapter-react-ui/styles.css");
+import { useSession } from "next-auth/react";
+import ClientProvider from "@/components/client-provider";
 
 interface IProps {
   children?: React.ReactNode;
 }
 
 const Wallet = ({ children }: IProps) => {
+  const { connect } = useWallet();
+
   // The network can be set to 'devnet', 'testnet', or 'mainnet-beta'.
   const network = WalletAdapterNetwork.Devnet;
 
@@ -49,6 +55,10 @@ const Wallet = ({ children }: IProps) => {
   const autoSignIn = useCallback(async (adapter: Adapter) => {
     // If the signIn feature is not available, return true
     if (!("signIn" in adapter)) return true;
+
+    // if (session) {
+    //   return adapter.autoConnect();
+    // }
 
     // Fetch the signInInput from the backend
     const createResponse = await fetch("api/sign");
@@ -83,13 +93,16 @@ const Wallet = ({ children }: IProps) => {
     return false;
   }, []);
 
+  // useEffect(() => {
+  //   if (session) {
+  //     connect();
+  //   }
+  // }, [session]);
+
   return (
     <ConnectionProvider endpoint={endpoint}>
       <WalletProvider wallets={wallets} autoConnect={autoSignIn}>
-        <WalletModalProvider>
-          <WalletMultiButton />
-          {children}
-        </WalletModalProvider>
+        <WalletModalProvider>{children}</WalletModalProvider>
       </WalletProvider>
     </ConnectionProvider>
   );
