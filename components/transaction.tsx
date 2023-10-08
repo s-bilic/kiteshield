@@ -140,10 +140,7 @@ const Transaction = ({
   const insuredTokenValue = insuredValue / priceHistory;
 
   return (
-    <Card
-      className="p-5 hover:border-white hover:cursor-pointer"
-      onClick={onClick}
-    >
+    <Card className="p-5 hover:border-white" onClick={onClick}>
       <div className="flex w-full items-center justify-between">
         <div className="flex justify-between items-center">
           <Image
@@ -184,34 +181,39 @@ const Transaction = ({
             </div>
           </div>
         </div>
-        <CardDescription>
-          <Badge className="bg-white mx-2">
-            <p className="text-xs text-slate-900">
-              {"$" + formattedNumber(priceHistory)}
-            </p>
-          </Badge>
-          <Badge
-            className={
-              price > priceHistory
-                ? "bg-lime-500"
-                : price < priceHistory
-                ? "bg-red-500"
-                : "bg-gray-400"
-            }
-          >
-            <p className="text-xs text-slate-900">
-              {"$" + formattedNumber(price)}
-            </p>
-          </Badge>
+        <div className="flex">
+          <div>
+            <p className="text-xs text-muted-foreground">Price</p>
+            <Badge className="bg-white mr-2">
+              <p className="text-xs text-slate-900">
+                {"$" + formattedNumber(priceHistory)}
+              </p>
+            </Badge>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Price</p>
+            <Badge
+              className={
+                price > priceHistory
+                  ? "bg-lime-500"
+                  : price < priceHistory
+                  ? "bg-red-500"
+                  : "bg-gray-400"
+              }
+            >
+              <p className="text-xs text-slate-900">
+                {"$" + formattedNumber(price)}
+              </p>
+            </Badge>
+          </div>
           {/* <PriceChart
             points={[
               [12.40342549423265, 12.40342549423265],
               [12.40342549423265, 12.60342549423265],
             ]}
           /> */}
-        </CardDescription>
+        </div>
       </div>
-
       {active && (
         <div>
           <Form {...form}>
@@ -229,6 +231,7 @@ const Transaction = ({
                       </div>
                     </Label>
                     <Slider
+                      className="hover:cursor-pointer"
                       defaultValue={priceDropValue}
                       max={100}
                       step={1}

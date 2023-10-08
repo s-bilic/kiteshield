@@ -1,8 +1,19 @@
 import { useState, useTransition } from "react";
-import { ArrowRight, Loader2 } from "lucide-react";
+import {
+  AlertOctagon,
+  ArrowRight,
+  UnlockIcon,
+  CalendarClockIcon,
+} from "lucide-react";
 import PriceChart from "./priceChart";
 import Image from "next/image";
-import { Card, CardDescription } from "./ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
 import { Label } from "./ui/label";
 import { Separator } from "./ui/separator";
 import { Button } from "./ui/button";
@@ -22,6 +33,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 const InsuredTransaction = ({
+  policy,
   logoSpend,
   logoReceived,
   nameSpend,
@@ -47,6 +59,7 @@ const InsuredTransaction = ({
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   });
+
   const formattedNumber = (value: number) => {
     const data = Intl.NumberFormat("en-US", {
       notation: "compact",
@@ -58,11 +71,7 @@ const InsuredTransaction = ({
 
   return (
     <Card
-      className={
-        insured
-          ? "p-5 hover:border-white border-indigo-500 hover:cursor-pointer"
-          : "p-5 hover:border-white hover:cursor-pointer"
-      }
+      className={insured ? "p-5 hover:border-white " : "p-5 hover:border-white"}
       onClick={onClick}
     >
       <div className="flex w-full items-center justify-between">
@@ -76,16 +85,29 @@ const InsuredTransaction = ({
             src={logoSpend}
           />
           <div>
-            <p className="text-s ml-2">
-              {formattedNumber(spend ? spend : transfer[0]?.tokenAmount)}
-            </p>
+            <p className="text-s ml-2">{formattedNumber(spend)}</p>
             <p className="text-xs text-muted-foreground ml-2">{nameSpend}</p>
           </div>
           <div className="mx-4 border rounded-full p-1">
             <ArrowRight width={14} height={14} />
           </div>
+          <div className="flex items-center">
+            <Image
+              style={{ borderRadius: "100%", border: "solid 1px white" }}
+              width={40}
+              height={40}
+              alt={"t"}
+              src={logoReceived}
+            />
+            <div>
+              <p className="text-s ml-2">{formattedNumber(received)}</p>
+              <p className="text-xs text-muted-foreground ml-2">
+                {nameReceived}
+              </p>
+            </div>
+          </div>
         </div>
-        <CardDescription>
+        <div className="flex justify-end align-end">
           <Badge className="bg-white mx-2">
             <p className="text-xs text-slate-900">
               {"$" + formattedNumber(priceHistory)}
@@ -104,7 +126,7 @@ const InsuredTransaction = ({
               {"$" + formattedNumber(price)}
             </p>
           </Badge>
-        </CardDescription>
+        </div>
       </div>
 
       {active && (
@@ -142,7 +164,8 @@ const InsuredTransaction = ({
                             <RadioGroup
                               name="range"
                               onValueChange={field.onChange}
-                              defaultValue={field.value}
+                              defaultValue={policy?.risk?.range}
+                              value={policy?.name}
                               className="grid grid-cols-3 gap-4"
                               disabled
                             >
@@ -203,27 +226,49 @@ const InsuredTransaction = ({
                       {...form.register("signature")}
                     />
                   </div>
-                  <Button variant="secondary" type="submit" name="risk_button">
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Calculate risk
-                  </Button>
-                  <div className="flex-col">
-                    <Button
-                      className={"w-full"}
-                      variant="secondary"
-                      name="approve_button"
-                      type="submit"
-                    >
-                      Approve
-                    </Button>
-                    <Button
-                      className={"w-full"}
-                      variant="destructive"
-                      type="submit"
-                    >
-                      Decline
-                    </Button>
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">
+                        Risk factor
+                      </CardTitle>
+                      <AlertOctagon width={18} />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold text-orange-500">
+                        {policy?.risk?.factor}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Associated with this transaction
+                      </p>
+                    </CardContent>
+                  </Card>
+                  <div className="flex space-x-8">
+                    <div className="-mx-2 flex items-start space-x-4 rounded-md p-2 transition-all hover:bg-accent hover:text-accent-foreground">
+                      <UnlockIcon />
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium leading-none">
+                          Claim price
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          ${policy?.claimPrice?.toFixed(4)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="-mx-2 flex items-start space-x-4 rounded-md p-2 transition-all hover:bg-accent hover:text-accent-foreground">
+                      <CalendarClockIcon />
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium leading-none">
+                          Claim period
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          3 days left
+                        </p>
+                      </div>
+                    </div>
                   </div>
+                  <Button disabled size={"sm"} variant="secondary">
+                    Claim {policy?.claim?.toFixed(4)} SOL
+                  </Button>
                 </div>
               </div>
             </form>

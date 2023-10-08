@@ -29,6 +29,7 @@ const InsuredTransactions = ({ tokenList, session }: IProps) => {
     initialData: [], // Provide the appropriate initial data structure
   });
 
+  console.log(insuredData);
   return (
     <div className="w-full my-4">
       {insuredData?.map((item, index) => (
@@ -36,6 +37,7 @@ const InsuredTransactions = ({ tokenList, session }: IProps) => {
           {index !== 0 && <Separator decorative={false} className="my-2" />}
           {item?.insured && (
             <InsuredTransaction
+              policy={item?.Policy[0]}
               logoSpend={
                 tokenList?.find((token) => token?.address === item?.spendToken)
                   ?.logoURI
@@ -57,9 +59,9 @@ const InsuredTransactions = ({ tokenList, session }: IProps) => {
               transfer={[2]}
               spend={item?.spend}
               received={item?.received}
-              price={item?.priceNow}
+              price={item?.price}
+              priceHistory={item?.priceHistory}
               signature={item?.signature}
-              priceHistory={item?.price}
               onClick={() => handleTransaction(index)}
               insured={item?.insured}
               active={activeIndex === index}

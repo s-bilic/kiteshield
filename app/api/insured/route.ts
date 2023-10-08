@@ -16,6 +16,13 @@ export async function GET(req: NextRequest, res: NextResponse) {
         address: userAddress as string,
       },
     },
+    include: {
+      Policy: {
+        include: {
+          risk: true,
+        },
+      },
+    },
   });
 
   return NextResponse.json(data);
