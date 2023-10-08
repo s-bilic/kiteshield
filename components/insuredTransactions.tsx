@@ -24,7 +24,7 @@ const InsuredTransactions = ({ tokenList, session }: IProps) => {
     data: insuredData,
     isLoading,
     error,
-  } = useSWR(apiUrl, fetcher, {
+  } = useSWR(apiUrl, () => fetcher(apiUrl), {
     revalidateOnFocus: true,
     initialData: [], // Provide the appropriate initial data structure
   });

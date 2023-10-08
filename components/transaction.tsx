@@ -26,6 +26,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { fetcher } from "@/lib/utils";
 
 const Transaction = ({
   logoSpend,
@@ -72,6 +73,7 @@ const Transaction = ({
           body: JSON.stringify(body),
         });
         const risk = await response.json();
+
         setRiskValue(risk);
       }
 

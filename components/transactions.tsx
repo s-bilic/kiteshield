@@ -7,6 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { pythTokens } from "@/lib/tokens";
 import { Skeleton } from "@/components/ui/skeleton";
 import useSWR from "swr";
+import { fetcher } from "@/lib/utils";
 
 interface IProps {
   tokenList?: [];
@@ -15,24 +16,16 @@ interface IProps {
 const Transactions = ({ tokenList, session }: IProps) => {
   const [activeIndex, setActiveIndex] = useState(null);
 
-  const fetcher = (url, data) =>
-    fetch("http://localhost:3000/api/transactions", {
-      method: "POST",
-      body: JSON.stringify(session),
-    }).then((res) => res.json());
+  const apiUrl = session ? "http://localhost:3000/api/transactions" : null;
 
   const {
     data: transactions,
     isLoading,
     error,
-  } = useSWR(
-    session ? "http://localhost:3000/api/transactions" : null,
-    fetcher,
-    {
-      revalidateOnFocus: true, // This will revalidate the data when the page is focused
-      initialData: [], // You can provide initial data here if needed
-    },
-  );
+  } = useSWR(apiUrl, () => fetcher(apiUrl, "POST", session), {
+    revalidateOnFocus: true,
+    initialData: [], // Provide the appropriate initial data structure
+  });
 
   const handleTransaction = (index) => {
     setActiveIndex(index);

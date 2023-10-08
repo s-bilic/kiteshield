@@ -26,4 +26,30 @@ function calculatePriceChange(currentPrice, previousPrice) {
   }
 }
 
-export { cn, calculateClaimPrice, calculatePriceChange };
+const fetcher = async (url, method = "GET", data = null, headers = {}) => {
+  const requestOptions = {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      ...headers,
+    },
+  };
+
+  if (data) {
+    requestOptions.body = JSON.stringify(data);
+  }
+
+  try {
+    const response = await fetch(url, requestOptions);
+
+    if (!response.ok) {
+      throw new Error(`HTTP Error! Status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    throw new Error(`Fetch Error: ${error.message}`);
+  }
+};
+
+export { cn, calculateClaimPrice, calculatePriceChange, fetcher };
