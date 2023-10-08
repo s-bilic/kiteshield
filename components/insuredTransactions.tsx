@@ -30,7 +30,7 @@ const InsuredTransactions = ({ tokenList, session }: IProps) => {
   });
 
   return (
-    <div className="w-full">
+    <div className="w-full my-4">
       {insuredData?.map((item, index) => (
         <React.Fragment key={index}>
           {index !== 0 && <Separator decorative={false} className="my-2" />}

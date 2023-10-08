@@ -124,6 +124,7 @@ const InsuredTransaction = ({
                       </div>
                     </Label>
                     <Slider
+                      disabled
                       defaultValue={priceDropValue}
                       max={100}
                       step={1}
@@ -143,6 +144,7 @@ const InsuredTransaction = ({
                               onValueChange={field.onChange}
                               defaultValue={field.value}
                               className="grid grid-cols-3 gap-4"
+                              disabled
                             >
                               <FormItem>
                                 <FormControl>

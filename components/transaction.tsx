@@ -2,7 +2,13 @@ import { useState, useTransition } from "react";
 import { ArrowRight, Loader2 } from "lucide-react";
 import PriceChart from "./priceChart";
 import Image from "next/image";
-import { Card, CardDescription } from "./ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
 import { Label } from "./ui/label";
 import { Separator } from "./ui/separator";
 import { Button } from "./ui/button";
@@ -10,6 +16,7 @@ import { Slider } from "./ui/slider";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { Badge } from "./ui/badge";
 import { Input } from "@/components/ui/input";
+import { AlertOctagon } from "lucide-react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, Controller } from "react-hook-form";
@@ -41,7 +48,7 @@ const Transaction = ({
   received,
   onClick,
 }) => {
-  const [status, setStatus] = useState("risk");
+  const [status, setStatus] = useState("initial");
   const [loading, setLoading] = useState(false);
   const { init, confirmed, signature: confirmSignature } = SendSolana();
   const [priceDropValue, setPriceDropValue] = useState([20]);
@@ -299,34 +306,56 @@ const Transaction = ({
                       {...form.register("signature")}
                     />
                   </div>
-                  <div className="grid full-w items-center gap-2.5">
-                    <div className="grid w-full max-w-sm items-center jus gap-2.5">
-                      <Label htmlFor="decrease">Insures me</Label>
-                      <p className="text-xs text-muted-foreground">{`${insuredTokenValue.toFixed(
-                        4,
-                      )} SOL (${insuredValue.toFixed(4)}$) `}</p>
+                  <div className="flex justify-between">
+                    <div className="grid full-w items-center gap-2.5">
+                      <div className="grid w-full max-w-sm items-center jus gap-2.5">
+                        <Label htmlFor="decrease">Insures me</Label>
+                        <p className="text-xs text-muted-foreground">{`${insuredTokenValue.toFixed(
+                          4,
+                        )} SOL (${insuredValue.toFixed(4)}$) `}</p>
+                      </div>
                     </div>
-                  </div>
-                  <div className="grid full-w items-center gap-2.5">
-                    <div className="grid w-full max-w-sm items-center jus gap-2.5">
-                      <Label htmlFor="decrease">Costs me</Label>
-                      <p className="text-xs text-rose-500">
-                        {riskValue?.premiumValue
-                          ? `${(riskValue?.premiumTokenValue).toFixed(
-                              4,
-                            )} SOL (${(riskValue?.premiumValue).toFixed(4)}$) `
-                          : `${(insuredTokenValue / 10).toFixed(4)} SOL (${(
-                              insuredValue / 10
-                            ).toFixed(4)}$) `}
-                        <Badge className="bg-white mx-2">
+                    <div className="grid full-w items-center gap-2.5 text-right">
+                      <div className="grid w-full max-w-sm items-center jus gap-2.5">
+                        <Label htmlFor="decrease">Costs me</Label>
+                        <p className="text-xs text-rose-500">
+                          {riskValue?.premiumValue
+                            ? `${(riskValue?.premiumTokenValue).toFixed(
+                                4,
+                              )} SOL (${(riskValue?.premiumValue).toFixed(
+                                4,
+                              )}$) `
+                            : `${(insuredTokenValue / 10).toFixed(4)} SOL (${(
+                                insuredValue / 10
+                              ).toFixed(4)}$) `}
+                          {/* <Badge className="bg-white mx-2">
                           <p className="text-xs text-slate-900">
                             {"Risk: " + riskValue?.risk}
                           </p>
-                        </Badge>
-                      </p>
+                        </Badge> */}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                  {status === "risk" && (
+                  {status === "approving" && (
+                    <Card>
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">
+                          Risk factor
+                        </CardTitle>
+                        <AlertOctagon width={18} />
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold text-orange-500">
+                          D
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Associated with this transaction
+                        </p>
+                      </CardContent>
+                    </Card>
+                  )}
+                  {(status === "initial" || status === "risk") && (
                     <Button
                       variant="secondary"
                       type="submit"
@@ -339,7 +368,7 @@ const Transaction = ({
                     </Button>
                   )}
                   {status === "approving" && (
-                    <div className="flex-col">
+                    <div className="flex-col space-y-2">
                       <Button
                         className={"w-full"}
                         variant="secondary"

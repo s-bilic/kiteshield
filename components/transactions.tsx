@@ -45,7 +45,7 @@ const Transactions = ({ tokenList, session }: IProps) => {
   );
 
   return (
-    <div className="w-full">
+    <div className="w-full my-4">
       {isLoading &&
         Array(5)
           .fill()
