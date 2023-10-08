@@ -107,25 +107,47 @@ const InsuredTransaction = ({
             </div>
           </div>
         </div>
-        <div className="flex justify-end align-end">
-          <Badge className="bg-white mx-2">
-            <p className="text-xs text-slate-900">
-              {"$" + formattedNumber(priceHistory)}
+        <div className="flex">
+          <div>
+            <p
+              className="text-xs text-muted-foreground ml-2"
+              style={{ fontSize: "10px" }}
+            >
+              price (tx)
             </p>
-          </Badge>
-          <Badge
-            className={
-              price > priceHistory
-                ? "bg-lime-500"
-                : price < priceHistory
-                ? "bg-red-500"
-                : "bg-gray-400"
-            }
-          >
-            <p className="text-xs text-slate-900">
-              {"$" + formattedNumber(price)}
+            <Badge className="bg-white mr-2 w-16 justify-center">
+              <p className="text-xs text-slate-900">
+                {"$" + priceHistory.toFixed(2)}
+              </p>
+            </Badge>
+          </div>
+          <div>
+            <p
+              className="text-xs text-muted-foreground ml-2"
+              style={{ fontSize: "10px" }}
+            >
+              price
             </p>
-          </Badge>
+            <Badge
+              className={
+                price > priceHistory
+                  ? "bg-lime-500 w-16 justify-center"
+                  : price < priceHistory
+                  ? "bg-red-500 w-16 justify-center"
+                  : "bg-gray-400 w-16 justify-center"
+              }
+            >
+              <p className="text-xs text-slate-900">
+                {"$" + price?.toFixed(2)}
+              </p>
+            </Badge>
+          </div>
+          {/* <PriceChart
+            points={[
+              [12.40342549423265, 12.40342549423265],
+              [12.40342549423265, 12.60342549423265],
+            ]}
+          /> */}
         </div>
       </div>
 
@@ -142,12 +164,12 @@ const InsuredTransaction = ({
                         <Label htmlFor="decrease">
                           When the price goes down by
                         </Label>
-                        <p className="text-xs text-muted-foreground">{`-${priceDropValue}%`}</p>
+                        <p className="text-xs text-muted-foreground">{`-${policy?.risk?.decrease}%`}</p>
                       </div>
                     </Label>
                     <Slider
                       disabled
-                      defaultValue={priceDropValue}
+                      defaultValue={[policy?.risk?.decrease]}
                       max={100}
                       step={1}
                       onValueChange={(e) => setPriceDropValue(e)}

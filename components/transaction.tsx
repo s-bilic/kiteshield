@@ -183,26 +183,36 @@ const Transaction = ({
         </div>
         <div className="flex">
           <div>
-            <p className="text-xs text-muted-foreground">Price</p>
-            <Badge className="bg-white mr-2">
+            <p
+              className="text-xs text-muted-foreground ml-2"
+              style={{ fontSize: "10px" }}
+            >
+              price (tx)
+            </p>
+            <Badge className="bg-white mr-2 w-16 justify-center">
               <p className="text-xs text-slate-900">
-                {"$" + formattedNumber(priceHistory)}
+                {"$" + priceHistory.toFixed(2)}
               </p>
             </Badge>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground">Price</p>
+            <p
+              className="text-xs text-muted-foreground ml-2"
+              style={{ fontSize: "10px" }}
+            >
+              price
+            </p>
             <Badge
               className={
                 price > priceHistory
-                  ? "bg-lime-500"
+                  ? "bg-lime-500 w-16 justify-center"
                   : price < priceHistory
-                  ? "bg-red-500"
-                  : "bg-gray-400"
+                  ? "bg-red-500 w-16 justify-center"
+                  : "bg-gray-400 w-16 justify-center"
               }
             >
               <p className="text-xs text-slate-900">
-                {"$" + formattedNumber(price)}
+                {"$" + price?.toFixed(2)}
               </p>
             </Badge>
           </div>
