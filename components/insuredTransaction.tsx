@@ -5,6 +5,7 @@ import {
   UnlockIcon,
   CalendarClockIcon,
   ShieldCheck,
+  Loader2,
 } from "lucide-react";
 import PriceChart from "./priceChart";
 import Image from "next/image";
@@ -33,6 +34,9 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import Countdown from "react-countdown";
+import { useSWRConfig } from "swr";
+
 const InsuredTransaction = ({
   policy,
   logoSpend,
@@ -48,8 +52,11 @@ const InsuredTransaction = ({
   received,
   insured,
   onClick,
+  updatedAt,
   completed,
 }) => {
+  const { mutate } = useSWRConfig();
+  const [loading, setLoading] = useState(false);
   const [priceDropValue, setPriceDropValue] = useState([20]);
   const FormSchema = z.object({
     range: z.enum(["day", "week", "month"], {
@@ -72,6 +79,7 @@ const InsuredTransaction = ({
   };
 
   const claimSolana = async () => {
+    setLoading(true);
     const body = {
       signature: signature,
     };
@@ -80,7 +88,8 @@ const InsuredTransaction = ({
       method: "POST",
       body: JSON.stringify(body),
     });
-
+    mutate("api/premium");
+    setLoading(false);
     console.log(response);
   };
 
@@ -90,6 +99,16 @@ const InsuredTransaction = ({
   const insuredTokenValue = insuredValue / priceHistory;
 
   const claimValue = price * policy?.claim?.toFixed(4);
+  // Given start time
+  const startTime = new Date(updatedAt);
+
+  // Calculate the end time, 7 days from the start time
+  const endTime = new Date(startTime);
+  endTime.setDate(startTime.getDate() + Number(policy?.risk?.range));
+  // Calculate the time remaining in milliseconds
+  const timeRemaining = endTime - Date.now();
+
+  console.log(policy?.risk?.range);
 
   return (
     <Card
@@ -176,15 +195,8 @@ const InsuredTransaction = ({
               </p>
             </Badge>
           </div>
-          {/* <PriceChart
-            points={[
-              [12.40342549423265, 12.40342549423265],
-              [12.40342549423265, 12.60342549423265],
-            ]}
-          /> */}
         </div>
       </div>
-
       {active && (
         <div>
           <Form {...form}>
@@ -314,10 +326,14 @@ const InsuredTransaction = ({
                       <CalendarClockIcon />
                       <div className="space-y-1">
                         <p className="text-sm font-medium leading-none">
-                          Claim period
+                          Expiration time
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          3 days left
+                          {policy?.completed ? (
+                            "-"
+                          ) : (
+                            <Countdown date={Date.now() + timeRemaining} />
+                          )}
                         </p>
                       </div>
                     </div>
@@ -329,6 +345,9 @@ const InsuredTransaction = ({
                     type={"button"}
                     disabled={policy?.completed}
                   >
+                    {loading && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
                     Claim ${claimValue?.toFixed(2)}
                   </Button>
                 </div>

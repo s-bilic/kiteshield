@@ -16,7 +16,7 @@ interface IProps {
 const Transactions = ({ tokenList, session }: IProps) => {
   const [activeIndex, setActiveIndex] = useState(null);
 
-  const apiUrl = session ? "http://localhost:3000/api/transactions" : null;
+  const apiUrl = session ? "api/transactions" : null;
 
   const {
     data: transactions,

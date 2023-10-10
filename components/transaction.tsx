@@ -22,7 +22,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, Controller } from "react-hook-form";
 import * as z from "zod";
 import SendSolana from "@/lib/sendSolana";
-
 // import { updateTransaction } from "@/actions/actions";
 
 import {
@@ -55,7 +54,7 @@ const Transaction = ({
   const [riskValue, setRiskValue] = useState({});
 
   const FormSchema = z.object({
-    range: z.enum(["day", "week", "month"], {
+    range: z.enum(["1", "7", "30"], {
       required_error: "Select your range period",
     }),
     signature: z.string()?.optional(),
@@ -274,7 +273,7 @@ const Transaction = ({
                               <FormItem>
                                 <FormControl>
                                   <RadioGroupItem
-                                    value="day"
+                                    value="1"
                                     id="day"
                                     className="peer sr-only"
                                   />
@@ -289,7 +288,7 @@ const Transaction = ({
                               <FormItem>
                                 <FormControl>
                                   <RadioGroupItem
-                                    value="week"
+                                    value="7"
                                     id="week"
                                     className="peer sr-only"
                                   />
@@ -304,7 +303,7 @@ const Transaction = ({
                               <FormItem>
                                 <FormControl>
                                   <RadioGroupItem
-                                    value="month"
+                                    value="30"
                                     id="month"
                                     className="peer sr-only"
                                   />

@@ -18,7 +18,7 @@ const InsuredTransactions = ({ tokenList, session }: IProps) => {
 
   const fetcher = (url) => fetch(url).then((res) => res.json());
 
-  const apiUrl = session ? "http://localhost:3000/api/premium" : null;
+  const apiUrl = session ? "api/premium" : null;
 
   const {
     data: insuredData,
@@ -65,6 +65,7 @@ const InsuredTransactions = ({ tokenList, session }: IProps) => {
               insured={item?.insured}
               active={activeIndex === index}
               completed={item?.completed}
+              updatedAt={item?.updatedAt}
             />
           )}
         </React.Fragment>
