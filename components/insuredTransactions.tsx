@@ -18,7 +18,7 @@ const InsuredTransactions = ({ tokenList, session }: IProps) => {
 
   const fetcher = (url) => fetch(url).then((res) => res.json());
 
-  const apiUrl = session ? "http://localhost:3000/api/insured" : null;
+  const apiUrl = session ? "http://localhost:3000/api/premium" : null;
 
   const {
     data: insuredData,
@@ -29,7 +29,6 @@ const InsuredTransactions = ({ tokenList, session }: IProps) => {
     initialData: [], // Provide the appropriate initial data structure
   });
 
-  console.log(insuredData);
   return (
     <div className="w-full my-4">
       {insuredData?.map((item, index) => (
@@ -65,6 +64,7 @@ const InsuredTransactions = ({ tokenList, session }: IProps) => {
               onClick={() => handleTransaction(index)}
               insured={item?.insured}
               active={activeIndex === index}
+              completed={item?.completed}
             />
           )}
         </React.Fragment>

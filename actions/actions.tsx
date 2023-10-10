@@ -7,7 +7,6 @@ import { prisma } from "@/lib/prisma";
 
 const updateTransaction = async (formData: FormData) => {
   const signature = formData?.signature;
-  console.log(signature);
   const session = await getServerSession(authOptions);
   const userAddress = session?.user?.name;
   const exists = await prisma.transaction.findFirst({
@@ -26,7 +25,6 @@ const updateTransaction = async (formData: FormData) => {
       where: { signature: signature },
       data: { insured: true },
     });
-    console.log(updatedTransaction);
     revalidatePath("/");
   }
 };

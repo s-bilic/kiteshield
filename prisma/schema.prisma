@@ -44,8 +44,11 @@ model Policy {
   transactionId      Int
   transaction        Transaction @relation(fields: [transactionId], references: [id])
   premium            Float
+  premiumSignature   String      @default("")
   claim              Float
   claimPrice         Float
+  claimSignature     String      @default("")
+  completed          Boolean     @default(false)
   risk               Risk?       @relation(fields: [riskId], references: [id])
   riskId             Int?
 }

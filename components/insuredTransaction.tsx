@@ -4,6 +4,7 @@ import {
   ArrowRight,
   UnlockIcon,
   CalendarClockIcon,
+  ShieldCheck,
 } from "lucide-react";
 import PriceChart from "./priceChart";
 import Image from "next/image";
@@ -47,6 +48,7 @@ const InsuredTransaction = ({
   received,
   insured,
   onClick,
+  completed,
 }) => {
   const [priceDropValue, setPriceDropValue] = useState([20]);
   const FormSchema = z.object({
@@ -69,12 +71,41 @@ const InsuredTransaction = ({
     return data;
   };
 
+  const claimSolana = async () => {
+    const body = {
+      signature: signature,
+    };
+
+    const response = await fetch("http://localhost:3000/api/claim", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+
+    console.log(response);
+  };
+
+  //price type instead of priceHistory
+  const transactionValue = priceHistory * received;
+  const insuredValue = (transactionValue * priceDropValue[0]) / 100;
+  const insuredTokenValue = insuredValue / priceHistory;
+
+  const claimValue = price * policy?.claim?.toFixed(4);
+
   return (
     <Card
-      className={insured ? "p-5 hover:border-white " : "p-5 hover:border-white"}
+      className={
+        policy?.completed ? "p-5 border-green-500 " : "p-5 hover:border-white"
+      }
       onClick={onClick}
     >
       <div className="flex w-full items-center justify-between">
+        {policy?.completed && (
+          <ShieldCheck
+            className={`absolute -left-10 ${
+              policy?.completed ? "text-green-500" : ""
+            }`}
+          />
+        )}
         <div className="flex justify-between items-center">
           <Image
             className="border"
@@ -100,7 +131,10 @@ const InsuredTransaction = ({
               src={logoReceived}
             />
             <div>
-              <p className="text-s ml-2">{formattedNumber(received)}</p>
+              <p className="text-s ml-2">
+                {formattedNumber(received)}{" "}
+                {` (${transactionValue.toFixed(2)}$)`}
+              </p>
               <p className="text-xs text-muted-foreground ml-2">
                 {nameReceived}
               </p>
@@ -288,8 +322,14 @@ const InsuredTransaction = ({
                       </div>
                     </div>
                   </div>
-                  <Button disabled size={"sm"} variant="secondary">
-                    Claim {policy?.claim?.toFixed(4)} SOL
+                  <Button
+                    size={"sm"}
+                    variant="secondary"
+                    onClick={claimSolana}
+                    type={"button"}
+                    disabled={policy?.completed}
+                  >
+                    Claim ${claimValue?.toFixed(2)}
                   </Button>
                 </div>
               </div>

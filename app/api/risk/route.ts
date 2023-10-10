@@ -8,6 +8,11 @@ export async function POST(req: NextRequest, res: NextResponse) {
   const { signature, decrease, range } = await req.json();
   const session = await getServerSession(authOptions);
   const userAddress = session?.user?.name;
+
+  if (!session) {
+    return NextResponse.json({ message: "Not authenticated" });
+  }
+
   const body = {
     user: {
       name: userAddress,
@@ -70,8 +75,6 @@ export async function POST(req: NextRequest, res: NextResponse) {
   const riskFactor = 1;
   const totalPremiumValue = basePremiumValue + basePremiumValue * riskFactor;
   const totalPremiumTokenValue = totalPremiumValue / priceType;
-
-  console.log(totalPremiumTokenValue);
 
   return NextResponse.json({
     premiumValue: Number(totalPremiumValue),

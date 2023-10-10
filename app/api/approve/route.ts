@@ -10,13 +10,15 @@ export async function POST(req: NextRequest, res: NextResponse) {
   const session = await getServerSession(authOptions);
   const userAddress = session?.user?.name;
 
+  if (!session) {
+    return NextResponse.json({ message: "Not authenticated" });
+  }
+
   const body = {
     user: {
       name: userAddress,
     },
   };
-
-  console.log(range);
 
   const response = await fetch("http://localhost:3000/api/transactions", {
     method: "POST",
@@ -70,8 +72,6 @@ export async function POST(req: NextRequest, res: NextResponse) {
   const riskFactor = 1;
   const totalPremiumValue = basePremiumValue + basePremiumValue * riskFactor;
   const totalPremiumTokenValue = totalPremiumValue / priceType;
-
-  console.log(totalPremiumTokenValue);
 
   const exists = await prisma.transaction.findFirst({
     where: {

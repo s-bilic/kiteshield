@@ -22,7 +22,6 @@ const SendSolana = () => {
     async (amount: number) => {
       setProcessing(true);
       setConfirmed(false);
-      setSignature("");
 
       if (!publicKey) throw new WalletNotConnectedError();
 
@@ -42,16 +41,14 @@ const SendSolana = () => {
         minContextSlot,
       });
 
-      console.log(signature);
-
       await connection.confirmTransaction({
         blockhash,
         lastValidBlockHeight,
         signature,
       });
+      setSignature(signature);
       setProcessing(false);
       setConfirmed(true);
-      setSignature(signature);
     },
     [publicKey, sendTransaction, connection],
   );

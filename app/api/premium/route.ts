@@ -7,7 +7,10 @@ import { updateTransaction } from "@/actions/actions";
 export async function GET(req: NextRequest, res: NextResponse) {
   const session = await getServerSession(authOptions);
   const userAddress = session?.user?.name;
-  console.log(session, "x");
+
+  if (!session) {
+    return NextResponse.json({ message: "Not authenticated" });
+  }
 
   const data = await prisma.transaction.findMany({
     where: {
@@ -29,32 +32,45 @@ export async function GET(req: NextRequest, res: NextResponse) {
 }
 
 export async function POST(req: NextRequest, res: NextResponse) {
-  const { signature } = await req.json();
+  const { signature, premiumSignature } = await req.json();
+  console.log(signature, "s");
   const session = await getServerSession(authOptions);
   const userAddress = session?.user?.name;
 
-  const exists = await prisma.transaction.findFirst({
+  const transaction = await prisma.transaction.findFirst({
     where: {
       user: {
         address: userAddress as string,
       },
       signature: signature,
-      insured: true,
+    },
+    include: {
+      Policy: true,
     },
   });
 
-  if (exists) {
+  if (transaction?.insured) {
     console.error("This condition can not be met");
   } else {
-    const updatedTransaction = await prisma.transaction.updateMany({
+    const updatedTransaction = await prisma.transaction.update({
       where: {
-        signature: signature,
-        user: {
-          address: userAddress as string,
-        },
+        id: transaction?.id,
       },
-      data: { insured: true },
+      data: {
+        insured: true,
+      },
     });
+
+    const updatedPolicy = await prisma.policy.update({
+      where: {
+        id: transaction?.Policy[0]?.id,
+        transactionId: transaction?.id,
+      },
+      data: {
+        premiumSignature: premiumSignature,
+      },
+    });
+
     console.log(updatedTransaction);
     return NextResponse.json(updatedTransaction);
   }

@@ -1,4 +1,4 @@
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { ArrowRight, Loader2 } from "lucide-react";
 import PriceChart from "./priceChart";
 import Image from "next/image";
@@ -50,10 +50,10 @@ const Transaction = ({
 }) => {
   const [status, setStatus] = useState("initial");
   const [loading, setLoading] = useState(false);
-  const { init, confirmed, signature: confirmSignature } = SendSolana();
-  const [priceDropValue, setPriceDropValue] = useState([20]);
-
+  const { init, confirmed, signature: premiumSignature } = SendSolana();
+  const [priceDropValue, setPriceDropValue] = useState([10]);
   const [riskValue, setRiskValue] = useState({});
+
   const FormSchema = z.object({
     range: z.enum(["day", "week", "month"], {
       required_error: "Select your range period",
@@ -69,6 +69,7 @@ const Transaction = ({
     async (data: z.infer<typeof FormSchema>, event: any) => {
       const body = {
         signature: signature,
+        premiumSignature: premiumSignature,
         decrease: priceDropValue,
         range: data?.range,
       };
@@ -102,20 +103,8 @@ const Transaction = ({
               body: JSON.stringify(body),
             },
           );
-
           await approveResponse.json();
           await init(0.1);
-          const insureResponse = await fetch(
-            "http://localhost:3000/api/insured",
-            {
-              method: "POST",
-              body: JSON.stringify(body),
-            },
-          );
-
-          await insureResponse.json();
-          setStatus("risk");
-          setLoading(false);
         } catch (e) {
           setStatus("risk");
           setLoading(false);
@@ -124,6 +113,28 @@ const Transaction = ({
       }
     },
   );
+
+  const confirmPayment = async () => {
+    const body = {
+      premiumSignature: premiumSignature,
+      signature: signature,
+    };
+
+    const insureResponse = await fetch("http://localhost:3000/api/premium", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+
+    await insureResponse.json();
+    setStatus("risk");
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    if (confirmed) {
+      confirmPayment();
+    }
+  }, [confirmed]);
 
   const formattedNumber = (value: number) => {
     const data = Intl.NumberFormat("en-US", {
@@ -153,7 +164,7 @@ const Transaction = ({
           />
           <div>
             <p className="text-s ml-2">
-              {formattedNumber(spend ? spend : transfer[0]?.tokenAmount)}
+              {formattedNumber(transfer[0]?.tokenAmount)}
             </p>
             <p className="text-xs text-muted-foreground ml-2">{nameSpend}</p>
           </div>
@@ -170,9 +181,7 @@ const Transaction = ({
             />
             <div>
               <p className="text-s ml-2">
-                {formattedNumber(
-                  received ? received : transfer[1]?.tokenAmount,
-                )}
+                {formattedNumber(transfer[1]?.tokenAmount)}
                 {` (${transactionValue.toFixed(2)}$)`}
               </p>
               <p className="text-xs text-muted-foreground ml-2">
@@ -312,11 +321,6 @@ const Transaction = ({
                           <FormMessage />
                         </FormItem>
                       )}
-                    />
-                    <input
-                      value={signature}
-                      type="hidden"
-                      {...form.register("signature")}
                     />
                   </div>
                   <div className="flex justify-between">
