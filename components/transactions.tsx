@@ -32,14 +32,30 @@ const Transactions = ({ tokenList, session }: IProps) => {
   };
 
   const LoadingSkeleton = () => (
-    <Card className="flex items-center space-x-4 p-5">
-      <div className="flex items-center gap-8">
-        <Skeleton className="h-12 w-12 rounded-full" />
-        <Skeleton className="h-12 w-12 rounded-full" />
+    <Card className="flex items-center space-x-4 p-5 justify-between">
+      <div className="flex gap-7">
+        <div className="flex items-center">
+          <div className="flex items-center gap-x-20 mr-2">
+            <Skeleton className="h-10 w-10 rounded-full" />
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-2 w-16" />
+            <Skeleton className="h-2 w-10" />
+          </div>
+        </div>
+        <div className="flex items-center">
+          <div className="flex items-center gap-x-20 mr-2">
+            <Skeleton className="h-10 w-10 rounded-full" />
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-2 w-16" />
+            <Skeleton className="h-2 w-10" />
+          </div>
+        </div>
       </div>
-      <div className="space-y-2 w-full">
-        <Skeleton className="h-4" />
-        <Skeleton className="h-4" />
+      <div className="flex justify-center gap-2">
+        <Skeleton className="h-4 w-14" />
+        <Skeleton className="h-4 w-14" />
       </div>
     </Card>
   );

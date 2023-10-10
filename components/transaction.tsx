@@ -135,10 +135,20 @@ const Transaction = ({
     }
   }, [confirmed]);
 
-  const formattedNumber = (value: number) => {
+  const formattedNumber = (
+    value: number,
+    fraction: number = 2,
+    threshold: number = 1e-6,
+  ) => {
+    if (Math.abs(value) < threshold) {
+      // If the number is smaller than the threshold, format it in scientific notation with limited precision.
+      return value.toExponential(2);
+    }
+
+    // Format the number using compact notation and the desired precision.
     const data = Intl.NumberFormat("en-US", {
       notation: "compact",
-      maximumFractionDigits: 3,
+      maximumFractionDigits: fraction,
     }).format(value);
 
     return data;
@@ -148,7 +158,7 @@ const Transaction = ({
   const transactionValue = priceHistory * transfer[1]?.tokenAmount;
   const insuredValue = (transactionValue * priceDropValue[0]) / 100;
   const insuredTokenValue = insuredValue / priceHistory;
-
+  console.log(price);
   return (
     <Card className="p-5 hover:border-white" onClick={onClick}>
       <div className="flex w-full items-center justify-between">
@@ -197,9 +207,13 @@ const Transaction = ({
             >
               price (tx)
             </p>
-            <Badge className="bg-white mr-2 w-16 justify-center">
+            <Badge className="bg-white mr-2 w-18 justify-center">
               <p className="text-xs text-slate-900">
-                {"$" + priceHistory.toFixed(2)}
+                {"$" +
+                  formattedNumber(
+                    priceHistory,
+                    nameReceived === "USDC" ? 6 : 2,
+                  )}
               </p>
             </Badge>
           </div>
@@ -213,14 +227,14 @@ const Transaction = ({
             <Badge
               className={
                 price > priceHistory
-                  ? "bg-lime-500 w-16 justify-center"
+                  ? "bg-lime-500 w-18 justify-center"
                   : price < priceHistory
-                  ? "bg-red-500 w-16 justify-center"
-                  : "bg-gray-400 w-16 justify-center"
+                  ? "bg-red-500 w-18 justify-center"
+                  : "bg-gray-400 w-18 justify-center"
               }
             >
               <p className="text-xs text-slate-900">
-                {"$" + price?.toFixed(2)}
+                {"$" + formattedNumber(price, nameReceived === "USDC" ? 6 : 2)}
               </p>
             </Badge>
           </div>

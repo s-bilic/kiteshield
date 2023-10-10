@@ -108,8 +108,6 @@ const InsuredTransaction = ({
   // Calculate the time remaining in milliseconds
   const timeRemaining = endTime - Date.now();
 
-  console.log(policy?.risk?.range);
-
   return (
     <Card
       className={
