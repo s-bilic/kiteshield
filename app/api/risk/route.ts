@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { getTokenPriceHistory } from "@/lib/api";
-import { calculatePriceChange } from "@/lib/utils";
+import { calculatePriceChange, calculateRiskFactor } from "@/lib/utils";
 
 export async function POST(req: NextRequest, res: NextResponse) {
   const { signature, decrease, range } = await req.json();
@@ -72,13 +72,22 @@ export async function POST(req: NextRequest, res: NextResponse) {
   const weeklyPriceChange = calculatePriceChange(price, weeklyPriceHistory);
   const monthlyPriceChange = calculatePriceChange(price, monthlyPriceHistory);
 
-  const riskFactor = 1;
-  const totalPremiumValue = basePremiumValue + basePremiumValue * riskFactor;
+  const risk = calculateRiskFactor(
+    dailyPriceChange,
+    weeklyPriceChange,
+    monthlyPriceChange,
+    decrease,
+    range,
+  );
+
+  const totalPremiumValue = basePremiumValue + basePremiumValue * risk?.factor;
   const totalPremiumTokenValue = totalPremiumValue / priceType;
+
+  console.log(risk, Number(totalPremiumValue), Number(totalPremiumTokenValue));
 
   return NextResponse.json({
     premiumValue: Number(totalPremiumValue),
     premiumTokenValue: Number(totalPremiumTokenValue),
-    risk: riskFactor,
+    risk,
   });
 }

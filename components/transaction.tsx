@@ -16,12 +16,18 @@ import { Slider } from "./ui/slider";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { Badge } from "./ui/badge";
 import { Input } from "@/components/ui/input";
-import { AlertOctagon } from "lucide-react";
-
+import { AlertOctagon, TrendingUp, TrendingDown } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, Controller } from "react-hook-form";
 import * as z from "zod";
 import SendSolana from "@/lib/sendSolana";
+import { calculateRiskFactor } from "@/lib/utils";
 // import { updateTransaction } from "@/actions/actions";
 
 import {
@@ -154,278 +160,366 @@ const Transaction = ({
     return data;
   };
 
-  // also needs on server side
+  // priceHistory must be replaced with priceType
   const transactionValue = priceHistory * transfer[1]?.tokenAmount;
   const insuredValue = (transactionValue * priceDropValue[0]) / 100;
   const insuredTokenValue = insuredValue / priceHistory;
-  console.log(price);
+
+  const priceType =
+    price < priceHistory
+      ? { value: price, type: "price" }
+      : price > priceHistory
+      ? { value: priceHistory, type: "priceHistory" }
+      : price === priceHistory
+      ? null
+      : null;
+
   return (
-    <Card className="p-5 hover:border-white" onClick={onClick}>
-      <div className="flex w-full items-center justify-between">
-        <div className="flex justify-between items-center">
-          <Image
-            className="border"
-            style={{ borderRadius: "100%", border: "solid 1px white" }}
-            width={40}
-            height={40}
-            alt={"t"}
-            src={logoSpend}
-          />
+    <Card className="relative p-5 hover:border-white" onClick={onClick}>
+      <TooltipProvider>
+        <div className="flex w-full justify-end items-start">
           <div>
-            <p className="text-s ml-2">
-              {formattedNumber(transfer[0]?.tokenAmount)}
-            </p>
-            <p className="text-xs text-muted-foreground ml-2">{nameSpend}</p>
+            <div className="absolute top-7 -left-10">
+              {priceType?.type === "price" ? (
+                <Tooltip>
+                  <TooltipTrigger>
+                    <TrendingDown className="text-rose-500" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    This transaction is at a loss.<br></br> The current price of
+                    the received token is used for insurance.
+                  </TooltipContent>
+                </Tooltip>
+              ) : (
+                <Tooltip>
+                  <TooltipTrigger>
+                    <TrendingUp className="text-green-500" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    This transaction is at a profit.<br></br> The price of the
+                    received token at the time of transaction is used for
+                    insurance.
+                  </TooltipContent>
+                </Tooltip>
+              )}
+            </div>
           </div>
-          <div className="mx-4 border rounded-full p-1">
-            <ArrowRight width={14} height={14} />
-          </div>
-          <div className="flex items-center">
+        </div>
+        <div className="flex w-full items-center justify-between">
+          <div className="flex justify-between items-center">
             <Image
+              className="border"
               style={{ borderRadius: "100%", border: "solid 1px white" }}
               width={40}
               height={40}
               alt={"t"}
-              src={logoReceived}
+              src={logoSpend}
             />
             <div>
               <p className="text-s ml-2">
-                {formattedNumber(transfer[1]?.tokenAmount)}
-                {` (${transactionValue.toFixed(2)}$)`}
+                {formattedNumber(transfer[0]?.tokenAmount)}
               </p>
-              <p className="text-xs text-muted-foreground ml-2">
-                {nameReceived}
+              <p className="text-xs text-muted-foreground ml-2">{nameSpend}</p>
+            </div>
+            <div className="mx-4 border rounded-full p-1">
+              <ArrowRight width={14} height={14} />
+            </div>
+            <div className="flex items-center">
+              <Image
+                style={{ borderRadius: "100%", border: "solid 1px white" }}
+                width={40}
+                height={40}
+                alt={"t"}
+                src={logoReceived}
+              />
+              <div>
+                <p className="text-s ml-2">
+                  {formattedNumber(transfer[1]?.tokenAmount)}
+                  {` ($${transactionValue.toFixed(2)})`}
+                </p>
+                <p className="text-xs text-muted-foreground ml-2">
+                  {nameReceived}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="flex">
+            <div>
+              <p
+                className="text-xs text-muted-foreground ml-2"
+                style={{ fontSize: "10px" }}
+              >
+                price (tx)
               </p>
+              <Tooltip>
+                <TooltipTrigger>
+                  <Badge
+                    className={`bg-white mr-2 w-18 justify-center rounded-md ${
+                      priceType?.type === "price"
+                        ? ""
+                        : "border-blue-500 border-4"
+                    }`}
+                  >
+                    <p className="text-xs text-slate-900">
+                      {"$" +
+                        formattedNumber(
+                          priceHistory,
+                          nameReceived === "USDC" ? 6 : 2,
+                        )}
+                    </p>
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>
+                    The price of the received token at the time of transaction
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+            <div>
+              <p
+                className="text-xs text-muted-foreground ml-2"
+                style={{ fontSize: "10px" }}
+              >
+                price
+              </p>
+              <Tooltip>
+                <TooltipTrigger>
+                  <Badge
+                    className={`w-18 justfify-center rounded-md
+                      ${
+                        priceType?.type === "price"
+                          ? "bg-rose-500"
+                          : "bg-green-500"
+                      }
+                    `}
+                  >
+                    <p className="text-xs text-slate-900">
+                      {"$" +
+                        formattedNumber(price, nameReceived === "USDC" ? 6 : 2)}
+                    </p>
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>The current price of the received token</p>
+                </TooltipContent>
+              </Tooltip>
             </div>
           </div>
         </div>
-        <div className="flex">
+        {active && (
           <div>
-            <p
-              className="text-xs text-muted-foreground ml-2"
-              style={{ fontSize: "10px" }}
-            >
-              price (tx)
-            </p>
-            <Badge className="bg-white mr-2 w-18 justify-center">
-              <p className="text-xs text-slate-900">
-                {"$" +
-                  formattedNumber(
-                    priceHistory,
-                    nameReceived === "USDC" ? 6 : 2,
-                  )}
-              </p>
-            </Badge>
-          </div>
-          <div>
-            <p
-              className="text-xs text-muted-foreground ml-2"
-              style={{ fontSize: "10px" }}
-            >
-              price
-            </p>
-            <Badge
-              className={
-                price > priceHistory
-                  ? "bg-lime-500 w-18 justify-center"
-                  : price < priceHistory
-                  ? "bg-red-500 w-18 justify-center"
-                  : "bg-gray-400 w-18 justify-center"
-              }
-            >
-              <p className="text-xs text-slate-900">
-                {"$" + formattedNumber(price, nameReceived === "USDC" ? 6 : 2)}
-              </p>
-            </Badge>
-          </div>
-          {/* <PriceChart
-            points={[
-              [12.40342549423265, 12.40342549423265],
-              [12.40342549423265, 12.60342549423265],
-            ]}
-          /> */}
-        </div>
-      </div>
-      {active && (
-        <div>
-          <Form {...form}>
-            <form onSubmit={onSubmit}>
-              <Separator decorative={false} border className="my-7" />
-              <div className="flex justify-between items-end">
-                <div className="flex flex-col w-full gap-5">
-                  <div className="grid full-w items-center gap-2.5">
-                    <Label className="flex mb-2" htmlFor="decrease">
-                      <div className="grid w-full max-w-sm items-center jus gap-2.5">
-                        <Label htmlFor="decrease">
-                          When the price goes down by
-                        </Label>
-                        <p className="text-xs text-muted-foreground">{`-${priceDropValue}%`}</p>
-                      </div>
-                    </Label>
-                    <Slider
-                      className="hover:cursor-pointer"
-                      defaultValue={priceDropValue}
-                      max={100}
-                      step={1}
-                      onValueChange={(e) => setPriceDropValue(e)}
-                    />
-                  </div>
-                  <div className="grid w-full gap-2.5">
-                    <FormField
-                      control={form.control}
-                      name="range"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Within a</FormLabel>
-                          <FormControl>
-                            <RadioGroup
-                              name="range"
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                              className="grid grid-cols-3 gap-4"
-                            >
-                              <FormItem>
-                                <FormControl>
-                                  <RadioGroupItem
-                                    value="1"
-                                    id="day"
-                                    className="peer sr-only"
-                                  />
-                                </FormControl>
-                                <Label
-                                  htmlFor="day"
-                                  className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
-                                >
-                                  Day
-                                </Label>
-                              </FormItem>
-                              <FormItem>
-                                <FormControl>
-                                  <RadioGroupItem
-                                    value="7"
-                                    id="week"
-                                    className="peer sr-only"
-                                  />
-                                </FormControl>
-                                <FormLabel
-                                  htmlFor="week"
-                                  className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
-                                >
-                                  Week
-                                </FormLabel>
-                              </FormItem>
-                              <FormItem>
-                                <FormControl>
-                                  <RadioGroupItem
-                                    value="30"
-                                    id="month"
-                                    className="peer sr-only"
-                                  />
-                                </FormControl>
-                                <FormLabel
-                                  htmlFor="month"
-                                  className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
-                                >
-                                  Month
-                                </FormLabel>
-                              </FormItem>
-                            </RadioGroup>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <div className="flex justify-between">
+            <Form {...form}>
+              <form onSubmit={onSubmit}>
+                <Separator decorative={false} border className="my-7" />
+                <div className="flex justify-between items-end">
+                  <div className="flex flex-col w-full gap-5">
                     <div className="grid full-w items-center gap-2.5">
-                      <div className="grid w-full max-w-sm items-center jus gap-2.5">
-                        <Label htmlFor="decrease">Insures me</Label>
-                        <p className="text-xs text-muted-foreground">{`${insuredTokenValue.toFixed(
-                          4,
-                        )} SOL (${insuredValue.toFixed(4)}$) `}</p>
-                      </div>
-                    </div>
-                    <div className="grid full-w items-center gap-2.5 text-right">
-                      <div className="grid w-full max-w-sm items-center jus gap-2.5">
-                        <Label htmlFor="decrease">Costs me</Label>
-                        <p className="text-xs text-rose-500">
-                          {riskValue?.premiumValue
-                            ? `${(riskValue?.premiumTokenValue).toFixed(
-                                4,
-                              )} SOL (${(riskValue?.premiumValue).toFixed(
-                                4,
-                              )}$) `
-                            : `${(insuredTokenValue / 10).toFixed(4)} SOL (${(
-                                insuredValue / 10
-                              ).toFixed(4)}$) `}
-                          {/* <Badge className="bg-white mx-2">
-                          <p className="text-xs text-slate-900">
-                            {"Risk: " + riskValue?.risk}
-                          </p>
-                        </Badge> */}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  {status === "approving" && (
-                    <Card>
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">
-                          Risk factor
-                        </CardTitle>
-                        <AlertOctagon width={18} />
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-2xl font-bold text-orange-500">
-                          D
+                      <Label className="flex mb-2" htmlFor="decrease">
+                        <div className="grid w-full items-center jus gap-2.5">
+                          <Label htmlFor="decrease">
+                            When{" "}
+                            <Badge className="text-black mx-1 justify-top px-2 rounded-md">
+                              {nameReceived}
+                            </Badge>{" "}
+                            {`${
+                              priceType?.type === "price" ? "price" : "price "
+                            }`}
+                            {"  "}
+                            drops to {"->"}
+                            {` $${formattedNumber(
+                              priceType?.value -
+                                (priceDropValue / 100) * priceType?.value,
+                              nameReceived === "USDC" ? 6 : 2,
+                            )}`}
+                          </Label>
+                          <p className="text-xs text-muted-foreground">{`-${priceDropValue}%`}</p>
                         </div>
-                        <p className="text-xs text-muted-foreground">
-                          Associated with this transaction
-                        </p>
-                      </CardContent>
-                    </Card>
-                  )}
-                  {(status === "initial" || status === "risk") && (
-                    <Button
-                      variant="secondary"
-                      type="submit"
-                      name="risk_button"
-                    >
-                      {loading && (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      )}
-                      Calculate risk
-                    </Button>
-                  )}
-                  {status === "approving" && (
-                    <div className="flex-col space-y-2">
+                      </Label>
+                      <Slider
+                        className="hover:cursor-pointer"
+                        defaultValue={priceDropValue}
+                        max={100}
+                        step={1}
+                        onValueChange={(e) => setPriceDropValue(e)}
+                        disabled={status === "approving"}
+                      />
+                    </div>
+                    <div className="grid w-full gap-2.5">
+                      <FormField
+                        control={form.control}
+                        name="range"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Within a</FormLabel>
+                            <FormControl>
+                              <RadioGroup
+                                name="range"
+                                onValueChange={field.onChange}
+                                defaultValue={field.value}
+                                className="grid grid-cols-3 gap-4"
+                                disabled={status === "approving"}
+                              >
+                                <FormItem>
+                                  <FormControl>
+                                    <RadioGroupItem
+                                      value="1"
+                                      id="day"
+                                      className="peer sr-only"
+                                    />
+                                  </FormControl>
+                                  <Label
+                                    htmlFor="day"
+                                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                                  >
+                                    Day
+                                  </Label>
+                                </FormItem>
+                                <FormItem>
+                                  <FormControl>
+                                    <RadioGroupItem
+                                      value="7"
+                                      id="week"
+                                      className="peer sr-only"
+                                    />
+                                  </FormControl>
+                                  <FormLabel
+                                    htmlFor="week"
+                                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                                  >
+                                    Week
+                                  </FormLabel>
+                                </FormItem>
+                                <FormItem>
+                                  <FormControl>
+                                    <RadioGroupItem
+                                      value="30"
+                                      id="month"
+                                      className="peer sr-only"
+                                    />
+                                  </FormControl>
+                                  <FormLabel
+                                    htmlFor="month"
+                                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                                  >
+                                    Month
+                                  </FormLabel>
+                                </FormItem>
+                              </RadioGroup>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <div className="flex justify-between items-start">
+                      <div className="grid full-w items-center gap-2.5">
+                        <div className="grid w-full max-w-sm items-center jus gap-2.5">
+                          <Label htmlFor="decrease">Insures me</Label>
+                          <p className="text-xs text-muted-foreground">{`$${insuredValue.toFixed(
+                            4,
+                          )} out of $${transactionValue.toFixed(2)}`}</p>
+                        </div>
+                      </div>
+                      <div className="grid full-w items-center gap-2.5 text-right">
+                        <div className="grid w-full max-w-sm items-center jus gap-2.5">
+                          <Label htmlFor="decrease">Costs me</Label>
+                          <p className="text-xs text-muted-foreground">
+                            {status === "approving" &&
+                              `$${(insuredValue / 10).toFixed(4)} (base) +  $${(
+                                (insuredValue / 10) *
+                                riskValue?.risk?.factor
+                              ).toFixed(4)} (risk)`}
+                          </p>
+                          <div className="border-b"></div>
+                          <p className="text-xs text-rose-500">
+                            {status === "approving"
+                              ? riskValue?.premiumValue
+                                ? `$${(riskValue?.premiumValue).toFixed(4)}`
+                                : `$${(insuredValue / 10).toFixed(4)}`
+                              : "---"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    {status === "approving" && (
+                      <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                          <CardTitle className="text-sm font-medium">
+                            Risk factor
+                          </CardTitle>
+                          <AlertOctagon width={18} />
+                        </CardHeader>
+                        <CardContent className="flex justify-between items-end">
+                          <div>
+                            <div className="text-2xl font-bold text-orange-500">
+                              {riskValue?.risk?.level}
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              Associated with this transaction
+                            </p>
+                          </div>
+                          <div className="items-end justify-end">
+                            {riskValue?.risk?.reasons?.map((item, index) => (
+                              <p
+                                key={index}
+                                className="text-sm text-muted-foreground"
+                              >
+                                - {item}
+                              </p>
+                            ))}
+                            {/* base: ${insuredValue.toFixed(4) / 10}
+                            <br></br>
+                            base + risk:{" "}
+                            {riskValue?.premiumValue
+                              ? `$${(riskValue?.premiumValue).toFixed(4)}`
+                              : `$${(insuredValue / 10).toFixed(4)}`} */}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+                    {(status === "initial" || status === "risk") && (
                       <Button
-                        className={"w-full"}
                         variant="secondary"
-                        name="approve_button"
                         type="submit"
+                        name="risk_button"
                       >
                         {loading && (
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         )}
-                        Approve
+                        Calculate risk
                       </Button>
-                      <Button
-                        className={"w-full"}
-                        variant="destructive"
-                        type="submit"
-                        onClick={() => setStatus("risk")}
-                      >
-                        Decline
-                      </Button>
-                    </div>
-                  )}
+                    )}
+                    {status === "approving" && (
+                      <div className="flex-col space-y-2">
+                        <Button
+                          className={"w-full"}
+                          variant="secondary"
+                          name="approve_button"
+                          type="submit"
+                        >
+                          {loading && (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          )}
+                          Approve
+                        </Button>
+                        <Button
+                          className={"w-full"}
+                          variant="destructive"
+                          type="submit"
+                          onClick={() => setStatus("risk")}
+                        >
+                          Decline
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </form>
-          </Form>
-        </div>
-      )}
+              </form>
+            </Form>
+          </div>
+        )}
+      </TooltipProvider>
     </Card>
   );
 };

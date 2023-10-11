@@ -52,4 +52,97 @@ const fetcher = async (url, method = "GET", data = null, headers = {}) => {
   }
 };
 
-export { cn, calculateClaimPrice, calculatePriceChange, fetcher };
+const calculateRiskFactor = (
+  dailyPriceChange,
+  weeklyPriceChange,
+  monthlyPriceChange,
+  decrease,
+  range,
+) => {
+  const parsePercentage = (percentage) => {
+    return parseFloat(percentage.replace("%", ""));
+  };
+
+  dailyPriceChange = parsePercentage(dailyPriceChange);
+  weeklyPriceChange = parsePercentage(weeklyPriceChange);
+  monthlyPriceChange = parsePercentage(monthlyPriceChange);
+  console.log(dailyPriceChange);
+  console.log(weeklyPriceChange);
+  console.log(monthlyPriceChange);
+  let riskFactor = 0;
+  let riskLevel = "";
+  let reasons = [];
+
+  if (range === 1) {
+    if (dailyPriceChange < -5) {
+      riskFactor += 0.5;
+      reasons.push("Daily price change exceeds -5%.");
+    } else if (dailyPriceChange < 0) {
+      riskFactor += 0.3;
+      reasons.push("Daily price change is negative but not too significant.");
+    } else if (dailyPriceChange >= 0) {
+      riskFactor += 0.1;
+      reasons.push("Daily price change is positive or stable.");
+    }
+  } else if (range === 7) {
+    if (weeklyPriceChange < -10) {
+      riskFactor += 0.5;
+      reasons.push("Weekly price change exceeds -10%.");
+    } else if (weeklyPriceChange < 0) {
+      riskFactor += 0.3;
+      reasons.push("Weekly price change is negative but not too significant.");
+    } else if (weeklyPriceChange >= 0) {
+      riskFactor += 0.1;
+      reasons.push("Weekly price change is positive or stable.");
+    }
+  } else if (range === 30) {
+    if (monthlyPriceChange < -20) {
+      riskFactor += 0.5;
+      reasons.push("Monthly price change exceeds -20%.");
+    } else if (monthlyPriceChange < 0) {
+      riskFactor += 0.3;
+      reasons.push("Monthly price change is negative but not too significant.");
+    } else if (monthlyPriceChange >= 0) {
+      riskFactor += 0.1;
+      reasons.push("Monthly price change is positive or stable.");
+    }
+  } else {
+    riskFactor = 0;
+    riskLevel = "A";
+    reasons.push("Invalid duration provided.");
+  }
+
+  if (decrease > 20) {
+    riskFactor += 0.5;
+    reasons.push("Significant price drop in the transaction.");
+  } else if (decrease > 5) {
+    riskFactor += 0.3;
+    reasons.push("Moderate price drop in the transaction.");
+  } else {
+    reasons.push("Relatively low price drop in the transaction.");
+  }
+
+  if (riskFactor > 0.7) {
+    riskLevel = "D";
+  } else if (riskFactor > 0.4) {
+    riskLevel = "C";
+  } else if (riskFactor > 0.1) {
+    riskLevel = "B";
+  } else {
+    riskLevel = "A";
+  }
+
+  return {
+    factor: riskFactor,
+    level: riskLevel,
+    reasons: reasons,
+  };
+};
+
+export {
+  cn,
+  calculateClaimPrice,
+  calculatePriceChange,
+  fetcher,
+  calculateRiskFactor,
+};
