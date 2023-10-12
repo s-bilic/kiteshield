@@ -12,10 +12,23 @@ export async function POST(req: NextRequest, res: NextResponse) {
 
   // 1. Get all transactions belonging to the session address
   const transactions = await getTransactions(userAddress as string);
+  // const filteredTransactions = transactions?.filter(
+  //   (transaction) =>
+  //     (transaction?.type === "UNKNOWN" || transaction?.type === "TOKEN_MINT") &&
+  //     transaction?.tokenTransfers?.length >= 2,
 
+  const filteredTransactions = transactions?.filter(
+    (transaction) =>
+      transaction?.instructions?.find(
+        (instruction) =>
+          transaction?.tokenTransfers?.length >= 2 &&
+          instruction?.programId ===
+            "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4",
+      ),
+  );
   // 2. The transactions data does not have all the token information we need.
   // That's why we combine transactions + accepted pyth tokens data here.
-  const newTransactions = transactions?.map((item) => ({
+  const newTransactions = filteredTransactions?.map((item) => ({
     ...item,
     token: pythTokens?.find(
       (token) => token?.mint === item?.tokenTransfers[1]?.mint,
@@ -26,9 +39,13 @@ export async function POST(req: NextRequest, res: NextResponse) {
   // Here we combine the newTransactions + current/historic token price data.
   const output = await Promise.all(
     newTransactions?.map(async (item) => {
-      const tokenPrice = await getTokenPrice(item?.token?.id);
+      if (!item || !item.token || !item.token.id) {
+        return null; // Handle the case where item or item.token.id is missing
+      }
+
+      const tokenPrice = await getTokenPrice(item.token.id);
       const tokenPriceHistory = await getTokenPriceHistory(
-        item?.token?.id,
+        item.token.id,
         item.timestamp,
         false,
       );
@@ -51,5 +68,5 @@ export async function POST(req: NextRequest, res: NextResponse) {
     }),
   );
 
-  return NextResponse.json(output);
+  return NextResponse.json(output?.filter((item) => item !== null));
 }

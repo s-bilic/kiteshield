@@ -60,6 +60,8 @@ const Transactions = ({ tokenList, session }: IProps) => {
     </Card>
   );
 
+  console.log(transactions);
+
   return (
     <div className="w-full my-4 ">
       {isLoading &&
