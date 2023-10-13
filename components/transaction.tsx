@@ -468,12 +468,6 @@ const Transaction = ({
                                 - {item}
                               </p>
                             ))}
-                            {/* base: ${insuredValue.toFixed(4) / 10}
-                            <br></br>
-                            base + risk:{" "}
-                            {riskValue?.premiumValue
-                              ? `$${(riskValue?.premiumValue).toFixed(4)}`
-                              : `$${(insuredValue / 10).toFixed(4)}`} */}
                           </div>
                         </CardContent>
                       </Card>

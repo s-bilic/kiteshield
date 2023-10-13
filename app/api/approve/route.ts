@@ -3,7 +3,11 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { getTokenPriceHistory } from "@/lib/api";
 import { prisma } from "@/lib/prisma";
-import { calculateClaimPrice, calculatePriceChange } from "@/lib/utils";
+import {
+  calculateClaimPrice,
+  calculatePriceChange,
+  calculateRiskFactor,
+} from "@/lib/utils";
 
 export async function POST(req: NextRequest, res: NextResponse) {
   const { signature, decrease, range } = await req.json();
@@ -52,25 +56,38 @@ export async function POST(req: NextRequest, res: NextResponse) {
   const insuredTokenValue = insuredValue / priceType;
   const basePremiumValue = insuredValue / 10;
 
-  // used for risk factor
-  const dailyPriceChange = await getTokenPriceHistory(
+  const dailyPriceHistory = await getTokenPriceHistory(
     token?.id,
     "prevDay",
     true,
   );
-  const weeklyPriceChange = await getTokenPriceHistory(
+  const weeklyPriceHistory = await getTokenPriceHistory(
     token?.id,
     "prevWeek",
     true,
   );
-  const monthlyPriceChange = await getTokenPriceHistory(
+  const monthlyPriceHistory = await getTokenPriceHistory(
     token?.id,
     "prevMonth",
     true,
   );
 
-  const riskFactor = 1;
-  const totalPremiumValue = basePremiumValue + basePremiumValue * riskFactor;
+  // TO-DO: Make risk factor calculation
+  const dailyPriceChange = calculatePriceChange(price, dailyPriceHistory);
+  const weeklyPriceChange = calculatePriceChange(price, weeklyPriceHistory);
+  const monthlyPriceChange = calculatePriceChange(price, monthlyPriceHistory);
+
+  const risk = calculateRiskFactor(
+    dailyPriceChange,
+    weeklyPriceChange,
+    monthlyPriceChange,
+    decrease,
+    range,
+  );
+
+  console.log(risk);
+
+  const totalPremiumValue = basePremiumValue + basePremiumValue * risk?.factor;
   const totalPremiumTokenValue = totalPremiumValue / priceType;
 
   const exists = await prisma.transaction.findFirst({
@@ -110,18 +127,14 @@ export async function POST(req: NextRequest, res: NextResponse) {
             risk: {
               create: {
                 updatedAt: new Date(),
-                dailyPriceChange: calculatePriceChange(price, dailyPriceChange),
-                weeklyPriceChange: calculatePriceChange(
-                  price,
-                  weeklyPriceChange,
-                ),
-                monthlyPriceChange: calculatePriceChange(
-                  price,
-                  monthlyPriceChange,
-                ),
+                dailyPriceChange: dailyPriceChange,
+                weeklyPriceChange: weeklyPriceChange,
+                monthlyPriceChange: monthlyPriceChange,
                 range: range,
                 decrease: decrease[0],
-                factor: riskFactor,
+                factor: risk?.factor,
+                level: risk?.level,
+                reasons: risk?.reasons,
               },
             },
           },

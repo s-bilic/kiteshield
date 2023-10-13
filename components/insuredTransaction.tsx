@@ -351,13 +351,25 @@ const InsuredTransaction = ({
                         </CardTitle>
                         <AlertOctagon width={18} />
                       </CardHeader>
-                      <CardContent>
-                        <div className="text-2xl font-bold text-orange-500">
-                          {policy?.risk?.factor}
+                      <CardContent className="flex justify-between items-end">
+                        <div>
+                          <div className="text-2xl font-bold text-orange-500">
+                            {policy?.risk?.level}
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            Associated with this transaction
+                          </p>
                         </div>
-                        <p className="text-xs text-muted-foreground">
-                          Associated with this transaction
-                        </p>
+                        <div className="items-end justify-end">
+                          {policy?.risk?.reasons?.map((item, index) => (
+                            <p
+                              key={index}
+                              className="text-sm text-muted-foreground"
+                            >
+                              - {item}
+                            </p>
+                          ))}
+                        </div>
                       </CardContent>
                     </Card>
                     <div className="flex space-x-8">
