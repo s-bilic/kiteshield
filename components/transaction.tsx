@@ -58,7 +58,7 @@ const Transaction = ({
   const { init, confirmed, signature: premiumSignature } = SendSolana();
   const [priceDropValue, setPriceDropValue] = useState([10]);
   const [riskValue, setRiskValue] = useState({});
-
+  console.log(logoReceived);
   const FormSchema = z.object({
     range: z.enum(["1", "7", "30"], {
       required_error: "Select your range period",
@@ -185,7 +185,7 @@ const Transaction = ({
                   <TooltipTrigger>
                     <TrendingDown className="text-rose-500" />
                   </TooltipTrigger>
-                  <TooltipContent>
+                  <TooltipContent className="text-center">
                     This transaction is at a loss.<br></br> The current price of
                     the received token is used for insurance.
                   </TooltipContent>
@@ -195,10 +195,9 @@ const Transaction = ({
                   <TooltipTrigger>
                     <TrendingUp className="text-green-500" />
                   </TooltipTrigger>
-                  <TooltipContent>
-                    This transaction is at a profit.<br></br> The price of the
-                    received token at the time of transaction is used for
-                    insurance.
+                  <TooltipContent className="text-center">
+                    This transaction is in profit.<br></br> The price of the
+                    received token at the time of transaction will be used.
                   </TooltipContent>
                 </Tooltip>
               )}

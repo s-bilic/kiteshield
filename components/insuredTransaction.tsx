@@ -156,7 +156,9 @@ const InsuredTransaction = ({
             />
             <div>
               <p className="text-s ml-2">{formattedNumber(spend)}</p>
-              <p className="text-xs text-muted-foreground ml-2">{nameSpend}</p>
+              <p className="text-xs text-muted-foreground ml-2">
+                {nameSpend.toUpperCase()}
+              </p>
             </div>
             <div className="mx-4 border rounded-full p-1">
               <ArrowRight width={14} height={14} />
@@ -175,7 +177,7 @@ const InsuredTransaction = ({
                   {` ($${transactionValue.toFixed(2)})`}
                 </p>
                 <p className="text-xs text-muted-foreground ml-2">
-                  {nameReceived}
+                  {nameReceived.toUpperCase()}
                 </p>
               </div>
             </div>
