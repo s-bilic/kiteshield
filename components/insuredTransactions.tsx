@@ -9,27 +9,29 @@ import { Skeleton } from "./ui/skeleton";
 
 interface IProps {
   tokenList?: [];
+  data?: [];
   session?: {};
 }
 
-const InsuredTransactions = ({ tokenList, session }: IProps) => {
+const InsuredTransactions = ({ tokenList, insuredData, session }: IProps) => {
+  const { data, isLoading, error } = insuredData;
   const [activeIndex, setActiveIndex] = useState(null);
   const handleTransaction = (index) => {
     setActiveIndex(index);
   };
 
-  const fetcher = (url) => fetch(url).then((res) => res.json());
+  // const fetcher = (url) => fetch(url).then((res) => res.json());
 
-  const apiUrl = session ? "api/premium" : null;
+  // const apiUrl = session ? "api/premium" : null;
 
-  const {
-    data: insuredData,
-    isLoading,
-    error,
-  } = useSWR(apiUrl, () => fetcher(apiUrl), {
-    revalidateOnFocus: true,
-    initialData: [], // Provide the appropriate initial data structure
-  });
+  // const {
+  //   data: insuredData,
+  //   isLoading,
+  //   error,
+  // } = useSWR(apiUrl, () => fetcher(apiUrl), {
+  //   revalidateOnFocus: true,
+  //   initialData: [], // Provide the appropriate initial data structure
+  // });
 
   const LoadingSkeleton = () => (
     <Card className="flex items-center space-x-4 p-5 justify-between">
@@ -62,7 +64,7 @@ const InsuredTransactions = ({ tokenList, session }: IProps) => {
   return (
     <div className="w-full my-4">
       {isLoading &&
-        Array(insuredData?.length)
+        Array(data?.length)
           .fill()
           ?.map((item, index) => (
             <React.Fragment key={index}>
@@ -71,7 +73,7 @@ const InsuredTransactions = ({ tokenList, session }: IProps) => {
             </React.Fragment>
           ))}
       {!isLoading &&
-        insuredData?.map((item, index) => (
+        data?.map((item, index) => (
           <React.Fragment key={index}>
             {index !== 0 && <Separator decorative={false} className="my-2" />}
             {item?.insured && (

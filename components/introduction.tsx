@@ -37,7 +37,7 @@ const Introduction = () => {
         <div className="relative z-20 mt-auto flex justify-end text-right">
           <blockquote className="space-y-2">
             <p className="text-lg">
-              The easiest way to insure your transactions
+              The easiest way to protect your transactions
             </p>
             <footer className="text-sm">
               Connect your wallet and try it out!

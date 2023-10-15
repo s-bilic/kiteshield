@@ -12,11 +12,6 @@ export async function POST(req: NextRequest, res: NextResponse) {
 
   // 1. Get all transactions belonging to the session address
   const transactions = await getTransactions(userAddress as string);
-  // const filteredTransactions = transactions?.filter(
-  //   (transaction) =>
-  //     (transaction?.type === "UNKNOWN" || transaction?.type === "TOKEN_MINT") &&
-  //     transaction?.tokenTransfers?.length >= 2,
-
   const filteredTransactions = transactions?.filter(
     (transaction) =>
       transaction?.instructions?.find(

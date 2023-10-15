@@ -72,7 +72,7 @@ export function Navigation() {
                       kiteshield
                     </div>
                     <p className="text-sm leading-tight text-muted-foreground">
-                      The easiest way to insure transactions
+                      The easiest way to protect transactions
                     </p>
                   </a>
                 </NavigationMenuLink>

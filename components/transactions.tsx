@@ -11,9 +11,11 @@ import { fetcher } from "@/lib/utils";
 
 interface IProps {
   tokenList?: [];
+  insuredData?: [];
   session?: {};
 }
-const Transactions = ({ tokenList, session }: IProps) => {
+const Transactions = ({ tokenList, insuredData, session }: IProps) => {
+  const { data } = insuredData;
   const [activeIndex, setActiveIndex] = useState(null);
 
   const apiUrl = session ? "api/transactions" : null;
@@ -30,6 +32,8 @@ const Transactions = ({ tokenList, session }: IProps) => {
   const handleTransaction = (index) => {
     setActiveIndex(index);
   };
+
+  console.log(data);
 
   const LoadingSkeleton = () => (
     <Card className="flex items-center space-x-4 p-5 justify-between">
@@ -62,6 +66,15 @@ const Transactions = ({ tokenList, session }: IProps) => {
 
   console.log(transactions);
 
+  const filteredTransactions = transactions?.filter(
+    (item) =>
+      !data?.find(
+        (insuredItem) =>
+          insuredItem.signature === item.signature &&
+          insuredItem.insured === true,
+      ),
+  );
+
   return (
     <div className="w-full my-4 ">
       {isLoading &&
@@ -74,7 +87,7 @@ const Transactions = ({ tokenList, session }: IProps) => {
             </React.Fragment>
           ))}
       {!isLoading &&
-        transactions?.map((item, index) => (
+        filteredTransactions?.map((item, index) => (
           <React.Fragment key={index}>
             {index !== 0 && <Separator decorative={false} className="my-2" />}
             <Transaction

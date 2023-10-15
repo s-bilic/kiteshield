@@ -97,10 +97,76 @@ export async function POST(req: NextRequest, res: NextResponse) {
       },
       signature: signature,
     },
+    include: {
+      Policy: {
+        include: {
+          risk: true,
+        },
+      },
+    },
   });
 
   if (exists) {
-    console.error("An insured transaction already exists for this user.");
+    if (exists?.insured) {
+      console.error("An insured transaction already exists for this user.");
+    } else {
+      const updatedTransaction = await prisma.transaction.update({
+        where: {
+          id: exists.id,
+        },
+        data: {
+          updatedAt: new Date(),
+          signature: signature,
+          timestamp: singleTransaction?.timestamp,
+          price: price,
+          priceHistory: priceHistory,
+          spend: singleTransaction?.tokenTransfers[0]?.tokenAmount,
+          received: singleTransaction?.tokenTransfers[1]?.tokenAmount,
+          spendToken: singleTransaction?.tokenTransfers[0]?.mint,
+          receivedToken: singleTransaction?.tokenTransfers[1]?.mint,
+          user: {
+            connect: { address: userAddress as string },
+          },
+          Policy: {
+            update: {
+              where: {
+                id: exists?.Policy[0]?.id,
+              },
+              data: {
+                user: {
+                  connect: { address: userAddress as string },
+                },
+                premium: totalPremiumTokenValue,
+                claim: insuredTokenValue,
+                claimPrice: calculateClaimPrice(priceType, decrease[0]),
+                risk: {
+                  update: {
+                    where: {
+                      id: exists?.Policy[0]?.risk?.id,
+                    },
+                    data: {
+                      updatedAt: new Date(),
+                      dailyPriceChange: dailyPriceChange,
+                      weeklyPriceChange: weeklyPriceChange,
+                      monthlyPriceChange: monthlyPriceChange,
+                      range: range,
+                      decrease: decrease[0],
+                      factor: risk?.factor,
+                      level: risk?.level,
+                      reasons: risk?.reasons,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      console.log(updatedTransaction, "updated");
+
+      return NextResponse.json(updatedTransaction);
+    }
   } else {
     const createRisk = await prisma.transaction.create({
       data: {

@@ -38,6 +38,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { useSWRConfig } from "swr";
 
 const Transaction = ({
   logoSpend,
@@ -53,6 +54,7 @@ const Transaction = ({
   received,
   onClick,
 }) => {
+  const { mutate } = useSWRConfig();
   const [status, setStatus] = useState("initial");
   const [loading, setLoading] = useState(false);
   const { init, confirmed, signature: premiumSignature } = SendSolana();
@@ -108,8 +110,9 @@ const Transaction = ({
               body: JSON.stringify(body),
             },
           );
+
           await approveResponse.json();
-          await init(0.1);
+          await init(0.01);
         } catch (e) {
           setStatus("risk");
           setLoading(false);
@@ -131,6 +134,7 @@ const Transaction = ({
     });
 
     await insureResponse.json();
+    mutate("api/premium");
     setStatus("risk");
     setLoading(false);
   };
@@ -417,7 +421,7 @@ const Transaction = ({
                           <Label htmlFor="decrease">Insures me</Label>
                           <p className="text-xs text-muted-foreground">{`$${insuredValue.toFixed(
                             4,
-                          )} out of $${transactionValue.toFixed(2)}`}</p>
+                          )} out of $${transactionValue.toFixed(4)}`}</p>
                         </div>
                       </div>
                       <div className="grid full-w items-center gap-2.5 text-right">
