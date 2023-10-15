@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { updateTransaction } from "@/actions/actions";
-
+export const maxDuration = 60;
 export async function GET(req: NextRequest, res: NextResponse) {
   const session = await getServerSession(authOptions);
   const userAddress = session?.user?.name;

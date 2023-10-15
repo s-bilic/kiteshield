@@ -33,8 +33,6 @@ const Transactions = ({ tokenList, insuredData, session }: IProps) => {
     setActiveIndex(index);
   };
 
-  console.log(data);
-
   const LoadingSkeleton = () => (
     <Card className="flex items-center space-x-4 p-5 justify-between">
       <div className="flex gap-7">

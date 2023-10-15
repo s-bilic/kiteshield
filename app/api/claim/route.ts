@@ -7,6 +7,7 @@ import { Connection, Keypair, PublicKey } from "@solana/web3.js";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
+export const maxDuration = 60;
 export async function POST(req: NextApiRequest, res: NextApiResponse) {
   const { signature } = await req.json();
   const session = await getServerSession(authOptions);

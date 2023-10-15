@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { getTokenPriceHistory } from "@/lib/api";
 import { calculatePriceChange, calculateRiskFactor } from "@/lib/utils";
-
+export const maxDuration = 60;
 export async function POST(req: NextRequest, res: NextResponse) {
   const { signature, decrease, range } = await req.json();
   const session = await getServerSession(authOptions);

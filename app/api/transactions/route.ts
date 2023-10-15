@@ -5,7 +5,7 @@ import {
   getTokenPrice,
 } from "@/lib/api";
 import { pythTokens } from "@/lib/tokens";
-
+export const maxDuration = 60;
 export async function POST(req: NextRequest, res: NextResponse) {
   const data = await req.json();
   const userAddress = data?.user?.name;
