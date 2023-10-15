@@ -60,7 +60,6 @@ const Transaction = ({
   const { init, confirmed, signature: premiumSignature } = SendSolana();
   const [priceDropValue, setPriceDropValue] = useState([10]);
   const [riskValue, setRiskValue] = useState({});
-  console.log(logoReceived);
   const FormSchema = z.object({
     range: z.enum(["1", "7", "30"], {
       required_error: "Select your range period",

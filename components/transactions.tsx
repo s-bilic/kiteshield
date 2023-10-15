@@ -64,8 +64,6 @@ const Transactions = ({ tokenList, insuredData, session }: IProps) => {
     </Card>
   );
 
-  console.log(transactions);
-
   const filteredTransactions = transactions?.filter(
     (item) =>
       !data?.find(
