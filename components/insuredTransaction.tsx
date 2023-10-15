@@ -1,4 +1,4 @@
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import {
   AlertOctagon,
   ArrowRight,
@@ -7,24 +7,16 @@ import {
   ShieldCheck,
   Loader2,
 } from "lucide-react";
-import PriceChart from "./priceChart";
 import Image from "next/image";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "./ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Label } from "./ui/label";
 import { Separator } from "./ui/separator";
 import { Button } from "./ui/button";
 import { Slider } from "./ui/slider";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { Badge } from "./ui/badge";
-
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import * as z from "zod";
 import {
   Form,
@@ -39,6 +31,36 @@ import { useSWRConfig } from "swr";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
 import { useToast } from "@/components/ui/use-toast";
+
+interface IProps {
+  updatedAt: String;
+  insured: Boolean;
+  spend: Number;
+  logoSpend: String;
+  nameSpend: String;
+  received: Number;
+  nameReceived: String;
+  logoReceived: String;
+  price: Number;
+  priceHistory: Number;
+  signature: String;
+  active: Boolean;
+  onClick: () => void;
+  policy: [
+    {
+      claim: Number;
+      claimPrice: Number;
+      completed: Boolean;
+      risk: {
+        decrease: Number;
+        level: String;
+        range: String;
+        reasons: String[];
+      };
+    },
+  ];
+}
+
 const InsuredTransaction = ({
   policy,
   logoSpend,
@@ -48,19 +70,16 @@ const InsuredTransaction = ({
   price,
   priceHistory,
   active,
-  transfer,
   signature,
   spend,
   received,
-  insured,
   onClick,
   updatedAt,
-  completed,
-}) => {
+}: IProps) => {
   const { toast } = useToast();
   const { mutate } = useSWRConfig();
-  const [loading, setLoading] = useState(false);
-  const [priceDropValue, setPriceDropValue] = useState([20]);
+  const [loading, setLoading] = useState<Boolean>(false);
+  const [priceDropValue, setPriceDropValue] = useState<Number[]>([20]);
   const FormSchema = z.object({
     range: z.enum(["1", "7", "30"], {
       required_error: "Select your range period",
@@ -73,9 +92,9 @@ const InsuredTransaction = ({
   });
 
   const formattedNumber = (
-    value: number,
-    fraction: number = 2,
-    threshold: number = 1e-6,
+    value: Number,
+    fraction: Number = 2,
+    threshold: Number = 1e-6,
   ) => {
     if (Math.abs(value) < threshold) {
       // If the number is smaller than the threshold, format it in scientific notation with limited precision.
@@ -85,8 +104,8 @@ const InsuredTransaction = ({
     // Format the number using compact notation and the desired precision.
     const data = Intl.NumberFormat("en-US", {
       notation: "compact",
-      maximumFractionDigits: fraction,
-    }).format(value);
+      maximumFractionDigits: fraction as number,
+    }).format(value as number);
 
     return data;
   };
@@ -125,21 +144,17 @@ const InsuredTransaction = ({
   };
 
   //price type instead of priceHistory
-  const transactionValue = priceHistory * received;
-  const insuredValue = (transactionValue * priceDropValue[0]) / 100;
-  const insuredTokenValue = insuredValue / priceHistory;
-
-  const claimValue = price * policy?.claim?.toFixed(4);
-  // Given start time
-  const startTime = new Date(updatedAt);
+  const transactionValue: number = Number(priceHistory) * Number(received);
+  const claimValue: number = Number(price) * Number(policy?.claim?.toFixed(4));
+  const startTime: Date = new Date(updatedAt);
 
   // Calculate the end time, 7 days from the start time
-  const endTime = new Date(startTime);
+  const endTime: Date = new Date(startTime);
   endTime.setDate(startTime.getDate() + Number(policy?.risk?.range));
   // Calculate the time remaining in milliseconds
-  const timeRemaining = endTime - Date.now();
+  const timeRemaining = Number(endTime) - Date.now();
 
-  const priceType =
+  const priceType: { value: Number; type: String } =
     price < priceHistory
       ? { value: price, type: "price" }
       : price > priceHistory
@@ -171,7 +186,7 @@ const InsuredTransaction = ({
               width={40}
               height={40}
               alt={"t"}
-              src={logoSpend}
+              src={logoSpend as string}
             />
             <div>
               <p className="text-s ml-2">{formattedNumber(spend)}</p>
@@ -188,7 +203,7 @@ const InsuredTransaction = ({
                 width={40}
                 height={40}
                 alt={"t"}
-                src={logoReceived}
+                src={logoReceived as string}
               />
               <div>
                 <p className="text-s ml-2">

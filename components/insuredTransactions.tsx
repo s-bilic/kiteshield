@@ -3,35 +3,76 @@
 import React, { useState } from "react";
 import InsuredTransaction from "./insuredTransaction";
 import { Separator } from "@/components/ui/separator";
-import useSWR from "swr";
 import { Card } from "./ui/card";
 import { Skeleton } from "./ui/skeleton";
 
 interface IProps {
-  tokenList?: [];
-  data?: [];
-  session?: {};
+  tokenList?: [
+    {
+      address: string;
+      symbol: string;
+      logoURI: string;
+    },
+  ];
+  insuredData?: {
+    data: [
+      {
+        createdAt: Date;
+        updatedAt: Date;
+        id: String;
+        insured: Boolean;
+        price: Number;
+        priceHistory: Number;
+        received: Number;
+        receivedToken: String;
+        signature: String;
+        spend: Number;
+        spendToken: String;
+        timestamp: Date;
+        userId: Number;
+        Policy: [
+          {
+            id: Number;
+            claim: Number;
+            claimPrice: Number;
+            claimSignature: String;
+            completed: Boolean;
+            premium: Number;
+            premoumSignature: String;
+            transactionId: Number;
+            userId: Number;
+            riskId: Number;
+            risk: {
+              id: Number;
+              createdAt: Date;
+              updatedAt: Date;
+              dailyPriceChange: String;
+              decrease: Number;
+              factor: Number;
+              level: String;
+              monthlyPriceChange: String;
+              range: String;
+              reasons: String[];
+              weeklyPriceChange: String;
+            };
+          },
+        ];
+      },
+    ];
+    error: any;
+    isLoading: Boolean;
+    isValidating: Boolean;
+  };
 }
 
-const InsuredTransactions = ({ tokenList, insuredData, session }: IProps) => {
+const InsuredTransactions = ({ tokenList, insuredData }: IProps) => {
   const { data, isLoading, error } = insuredData;
   const [activeIndex, setActiveIndex] = useState(null);
   const handleTransaction = (index) => {
     setActiveIndex(index);
   };
 
-  // const fetcher = (url) => fetch(url).then((res) => res.json());
-
-  // const apiUrl = session ? "api/premium" : null;
-
-  // const {
-  //   data: insuredData,
-  //   isLoading,
-  //   error,
-  // } = useSWR(apiUrl, () => fetcher(apiUrl), {
-  //   revalidateOnFocus: true,
-  //   initialData: [], // Provide the appropriate initial data structure
-  // });
+  console.log(data);
 
   const LoadingSkeleton = () => (
     <Card className="flex items-center space-x-4 p-5 justify-between">
@@ -73,47 +114,74 @@ const InsuredTransactions = ({ tokenList, insuredData, session }: IProps) => {
             </React.Fragment>
           ))}
       {!isLoading &&
-        data?.map((item, index) => (
-          <React.Fragment key={index}>
-            {index !== 0 && <Separator decorative={false} className="my-2" />}
-            {item?.insured && (
-              <InsuredTransaction
-                policy={item?.Policy[0]}
-                logoSpend={
-                  tokenList?.find(
-                    (token) => token?.address === item?.spendToken,
-                  )?.logoURI
-                }
-                logoReceived={
-                  tokenList?.find(
-                    (token) => token?.address === item?.receivedToken,
-                  )?.logoURI
-                }
-                nameSpend={
-                  tokenList?.find(
-                    (token) => token?.address === item?.spendToken,
-                  )?.symbol
-                }
-                nameReceived={
-                  tokenList?.find(
-                    (token) => token?.address === item?.receivedToken,
-                  )?.symbol
-                }
-                transfer={[2]}
-                spend={item?.spend}
-                received={item?.received}
-                price={item?.price}
-                priceHistory={item?.priceHistory}
-                signature={item?.signature}
-                onClick={() => handleTransaction(index)}
-                insured={item?.insured}
-                active={activeIndex === index}
-                completed={item?.completed}
-                updatedAt={item?.updatedAt}
-              />
-            )}
-          </React.Fragment>
-        ))}
+        data?.map(
+          (
+            item: {
+              insured: Boolean;
+              policy: [
+                {
+                  claim: Number;
+                  claimPrice: Number;
+                  completed: Boolean;
+                  risk: {
+                    decrease: Number;
+                    level: String;
+                    range: String;
+                    reasons: String[];
+                  };
+                },
+              ];
+              logoSpend: String;
+              spendToken: String;
+              receivedToken: String;
+              spend: Number;
+              received: Number;
+              price: Number;
+              priceHistory: Number;
+              signature: String;
+              updatedAt: String;
+            },
+            index: Number,
+          ) => (
+            <React.Fragment key={index}>
+              {index !== 0 && <Separator decorative={false} className="my-2" />}
+              {item?.insured && (
+                <InsuredTransaction
+                  policy={item?.Policy[0]}
+                  logoSpend={
+                    tokenList?.find(
+                      (token) => token?.address === item?.spendToken,
+                    )?.logoURI as string
+                  }
+                  logoReceived={
+                    tokenList?.find(
+                      (token) => token?.address === item?.receivedToken,
+                    )?.logoURI as string
+                  }
+                  nameSpend={
+                    tokenList?.find(
+                      (token) => token?.address === item?.spendToken,
+                    )?.symbol as string
+                  }
+                  nameReceived={
+                    tokenList?.find(
+                      (token) => token?.address === item?.receivedToken,
+                    )?.symbol as string
+                  }
+                  spend={item?.spend}
+                  received={item?.received}
+                  price={item?.price}
+                  priceHistory={item?.priceHistory}
+                  signature={item?.signature}
+                  onClick={() => handleTransaction(index)}
+                  insured={item?.insured}
+                  active={activeIndex === index}
+                  updatedAt={item?.updatedAt}
+                />
+              )}
+            </React.Fragment>
+          ),
+        )}
     </div>
   );
 };
