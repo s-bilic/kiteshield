@@ -38,7 +38,7 @@ import Countdown from "react-countdown";
 import { useSWRConfig } from "swr";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
-
+import { useToast } from "@/components/ui/use-toast";
 const InsuredTransaction = ({
   policy,
   logoSpend,
@@ -57,6 +57,7 @@ const InsuredTransaction = ({
   updatedAt,
   completed,
 }) => {
+  const { toast } = useToast();
   const { mutate } = useSWRConfig();
   const [loading, setLoading] = useState(false);
   const [priceDropValue, setPriceDropValue] = useState([20]);
@@ -96,16 +97,31 @@ const InsuredTransaction = ({
       signature: signature,
     };
 
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_DOMAIN}/api/claim`,
-      {
-        method: "POST",
-        body: JSON.stringify(body),
-      },
-    );
-    mutate("api/premium");
-    setLoading(false);
-    console.log(response);
+    try {
+      toast({
+        title: "Claiming...",
+        description: "This might take a few seconds",
+      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_DOMAIN}/api/claim`,
+        {
+          method: "POST",
+          body: JSON.stringify(body),
+        },
+      );
+      toast({
+        title: "Claimed successfully!",
+      });
+      mutate("api/premium");
+      setLoading(false);
+      console.log(response);
+    } catch (e) {
+      toast({
+        title: "Something went wrong",
+        variant: "destructive",
+      });
+      console.log(e);
+    }
   };
 
   //price type instead of priceHistory
@@ -414,7 +430,7 @@ const InsuredTransaction = ({
                       variant="secondary"
                       onClick={claimSolana}
                       type={"button"}
-                      disabled={policy?.completed}
+                      disabled={policy?.completed || loading}
                     >
                       {loading && (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />

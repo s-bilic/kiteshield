@@ -39,6 +39,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useSWRConfig } from "swr";
+import { useToast } from "@/components/ui/use-toast";
+import { ToastAction } from "@/components/ui/toast";
+import { useAtom } from "jotai";
+import { activeTabAtom } from "../lib/atom";
 
 const Transaction = ({
   logoSpend,
@@ -54,6 +58,8 @@ const Transaction = ({
   received,
   onClick,
 }) => {
+  const [activeTab, setActiveTab] = useAtom<String>(activeTabAtom);
+  const { toast, dismiss } = useToast();
   const { mutate } = useSWRConfig();
   const [status, setStatus] = useState("initial");
   const [loading, setLoading] = useState(false);
@@ -84,6 +90,10 @@ const Transaction = ({
         try {
           setLoading(true);
           setStatus("risk");
+          toast({
+            title: "Analyzing transaction...",
+            description: "This might take a few seconds",
+          });
           const response = await fetch(
             `${process.env.NEXT_PUBLIC_DOMAIN}/api/risk`,
             {
@@ -92,6 +102,7 @@ const Transaction = ({
             },
           );
           const risk = await response.json();
+          dismiss();
           setRiskValue(risk);
           setStatus("approving");
           setLoading(false);
@@ -105,6 +116,10 @@ const Transaction = ({
       if (event?.nativeEvent?.submitter?.name === "approve_button") {
         try {
           setLoading(true);
+          toast({
+            title: "Preparing your payment...",
+            description: "This might take a few seconds",
+          });
           const approveResponse = await fetch(
             `${process.env.NEXT_PUBLIC_DOMAIN}/api/approve`,
             {
@@ -114,11 +129,20 @@ const Transaction = ({
           );
 
           await approveResponse.json();
+          dismiss();
+          toast({
+            title: "Confirm payment",
+          });
           await init(0.01);
+          dismiss();
         } catch (e) {
+          console.log(e);
+          toast({
+            title: "Payment cancelled",
+            variant: "destructive",
+          });
           setStatus("risk");
           setLoading(false);
-          console.log(e);
         }
       }
     },
@@ -129,19 +153,33 @@ const Transaction = ({
       premiumSignature: premiumSignature,
       signature: signature,
     };
-
-    const insureResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_DOMAIN}/api/premium`,
-      {
-        method: "POST",
-        body: JSON.stringify(body),
-      },
-    );
-
-    await insureResponse.json();
-    mutate("api/premium");
-    setStatus("risk");
-    setLoading(false);
+    try {
+      const insureResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_DOMAIN}/api/premium`,
+        {
+          method: "POST",
+          body: JSON.stringify(body),
+        },
+      );
+      await insureResponse.json();
+      toast({
+        title: "Transaction insured!",
+        description: "Added to insured transactions",
+        action: (
+          <ToastAction
+            altText="Try again"
+            onClick={() => setActiveTab("insured")}
+          >
+            Show
+          </ToastAction>
+        ),
+      });
+      mutate("api/premium");
+      setStatus("risk");
+      setLoading(false);
+    } catch (e) {
+      dismiss();
+    }
   };
 
   useEffect(() => {
@@ -499,6 +537,7 @@ const Transaction = ({
                           variant="secondary"
                           name="approve_button"
                           type="submit"
+                          disabled={loading}
                         >
                           {loading && (
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

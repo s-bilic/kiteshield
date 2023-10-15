@@ -11,6 +11,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import ClientProvider from "@/components/client-provider";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
   title: "Kiteshield",
@@ -37,6 +38,7 @@ export default async function RootLayout({
               <div className="p-5 mx-auto w-[680px]">{children}</div>
             </ClientProvider>
           </Wallet>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>
