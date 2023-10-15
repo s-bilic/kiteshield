@@ -109,7 +109,7 @@ const calculateRiskFactor = (
   } else {
     riskFactor = 0;
     riskLevel = "A";
-    reasons.push("Invalid duration provided.");
+    // reasons.push("Invalid duration provided.");
   }
 
   if (decrease > 20) {

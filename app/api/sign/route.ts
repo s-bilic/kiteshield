@@ -20,7 +20,7 @@ export async function GET() {
     version: "1",
     nonce: "oBbLoEldZs",
     chainId: "devnet",
-    issuedAt: currentDateTime,
+    // issuedAt: currentDateTime,
     resources: ["https://www.kiteshield.xyz/", "https://phantom.app/"],
   };
   return NextResponse.json(signInData);
