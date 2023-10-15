@@ -24,10 +24,13 @@ export async function POST(req: NextRequest, res: NextResponse) {
     },
   };
 
-  const response = await fetch("http://localhost:3000/api/transactions", {
-    method: "POST",
-    body: JSON.stringify(body),
-  });
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_DOMAIN}/api/transactions`,
+    {
+      method: "POST",
+      body: JSON.stringify(body),
+    },
+  );
 
   const transactions = await response.json();
 

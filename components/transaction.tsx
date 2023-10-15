@@ -85,10 +85,13 @@ const Transaction = ({
         try {
           setLoading(true);
           setStatus("risk");
-          const response = await fetch("http://localhost:3000/api/risk", {
-            method: "POST",
-            body: JSON.stringify(body),
-          });
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_DOMAIN}/api/risk`,
+            {
+              method: "POST",
+              body: JSON.stringify(body),
+            },
+          );
           const risk = await response.json();
           setRiskValue(risk);
           setStatus("approving");
@@ -104,7 +107,7 @@ const Transaction = ({
         try {
           setLoading(true);
           const approveResponse = await fetch(
-            "http://localhost:3000/api/approve",
+            `${process.env.NEXT_PUBLIC_DOMAIN}/api/approve`,
             {
               method: "POST",
               body: JSON.stringify(body),
@@ -128,10 +131,13 @@ const Transaction = ({
       signature: signature,
     };
 
-    const insureResponse = await fetch("http://localhost:3000/api/premium", {
-      method: "POST",
-      body: JSON.stringify(body),
-    });
+    const insureResponse = await fetch(
+      `${process.env.NEXT_PUBLIC_DOMAIN}/api/premium`,
+      {
+        method: "POST",
+        body: JSON.stringify(body),
+      },
+    );
 
     await insureResponse.json();
     mutate("api/premium");

@@ -96,10 +96,13 @@ const InsuredTransaction = ({
       signature: signature,
     };
 
-    const response = await fetch("http://localhost:3000/api/claim", {
-      method: "POST",
-      body: JSON.stringify(body),
-    });
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_DOMAIN}/api/claim`,
+      {
+        method: "POST",
+        body: JSON.stringify(body),
+      },
+    );
     mutate("api/premium");
     setLoading(false);
     console.log(response);
