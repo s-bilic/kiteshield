@@ -15,20 +15,13 @@ const model = new OpenAI({
 
 const template = process.env.AI_TEMPLATE_PROMPT;
 
-// const promptTemplate = ChatPromptTemplate.fromMessages([
-//   ["system", template],
-//   // ["assistant", assistantTemplate],
-// ]);
-
 const outputParser = StructuredOutputParser.fromZodSchema(
   z
     .object({
-      daily_volume: z.string().describe("Volume risk score"),
-      daily_change: z.string().describe("Price change risk score"),
+      risk: z.string().describe("Calculated risk score"),
+      reasons: z.array(z.string()).describe("1 reason"),
     })
-    .describe(
-      "An object containing the volume risk score and price change risk score",
-    ),
+    .describe("An object containing the risk score and reasons"),
 );
 
 const outputFixingParser = OutputFixingParser.fromLLM(model, outputParser);
@@ -36,7 +29,7 @@ const outputFixingParser = OutputFixingParser.fromLLM(model, outputParser);
 // Don't forget to include formatting instructions in the prompt!
 const promptTemplate = new PromptTemplate({
   template: template,
-  inputVariables: ["daily_volume", "daily_change"],
+  inputVariables: ["day", "week", "month"],
   partialVariables: {
     format_instructions: outputFixingParser.getFormatInstructions(),
   },
@@ -49,15 +42,11 @@ const chain = new LLMChain({
   outputParser: outputFixingParser,
 });
 
-// const response = await chain.call({
-//   daily_volume: "1,000,000",
-//   daily_change: "3%",
-// });
-
-const AIResponse = async (a, b) => {
+const AIResponse = async (a, b, c) => {
   const response = await chain.call({
-    daily_volume: a,
-    daily_change: b,
+    day: a,
+    week: b,
+    month: c,
   });
 
   return response;
