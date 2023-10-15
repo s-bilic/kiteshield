@@ -16,14 +16,13 @@ import useSWR from "swr";
 import { fetcher } from "@/lib/utils";
 import { useAtom } from "jotai";
 import { activeTabAtom } from "../lib/atom";
-
-interface IProps {
-  tokenList?: [];
-}
 import { useToast } from "@/components/ui/use-toast";
 import { useEffect } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 
+interface IProps {
+  tokenList?: [];
+}
 const Main = ({ tokenList }: IProps) => {
   const [activeTab, setActiveTab] = useAtom<String>(activeTabAtom);
   const { toast, dismiss } = useToast();
@@ -35,8 +34,7 @@ const Main = ({ tokenList }: IProps) => {
     revalidateOnFocus: true,
     initialData: [], // Provide the appropriate initial data structure
   });
-  console.log(status, "s");
-  console.log(connecting, "c");
+
   useEffect(() => {
     if (connecting && status === "unauthenticated") {
       toast({ title: "Signing in..." });
@@ -54,7 +52,7 @@ const Main = ({ tokenList }: IProps) => {
       <Tabs
         defaultValue="transactions"
         value={activeTab as string}
-        onValueChange={(e) => setActiveTab(e)}
+        onValueChange={(e: String) => setActiveTab(e)}
         className="relative"
       >
         <TabsList>

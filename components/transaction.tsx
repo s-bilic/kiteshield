@@ -1,21 +1,13 @@
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useState } from "react";
 import { ArrowRight, Loader2 } from "lucide-react";
-import PriceChart from "./priceChart";
 import Image from "next/image";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "./ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Label } from "./ui/label";
 import { Separator } from "./ui/separator";
 import { Button } from "./ui/button";
 import { Slider } from "./ui/slider";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { Badge } from "./ui/badge";
-import { Input } from "@/components/ui/input";
 import { AlertOctagon, TrendingUp, TrendingDown } from "lucide-react";
 import {
   Tooltip,
@@ -24,11 +16,9 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import * as z from "zod";
 import SendSolana from "@/lib/sendSolana";
-import { calculateRiskFactor } from "@/lib/utils";
-// import { updateTransaction } from "@/actions/actions";
 
 import {
   Form,
@@ -44,6 +34,26 @@ import { ToastAction } from "@/components/ui/toast";
 import { useAtom } from "jotai";
 import { activeTabAtom } from "../lib/atom";
 
+interface IProps {
+  logoSpend?: String;
+  logoReceived?: String;
+  nameSpend?: String;
+  nameReceived?: String;
+  price?: Number;
+  priceHistory?: Number;
+  active?: Boolean;
+  transfer?: [
+    {
+      tokenAmount: Number;
+    },
+    {
+      tokenAmount: Number;
+    },
+  ];
+  signature?: String;
+  onClick?: () => void;
+}
+
 const Transaction = ({
   logoSpend,
   logoReceived,
@@ -54,10 +64,8 @@ const Transaction = ({
   active,
   transfer,
   signature,
-  spend,
-  received,
   onClick,
-}) => {
+}: IProps) => {
   const [activeTab, setActiveTab] = useAtom<String>(activeTabAtom);
   const { toast, dismiss } = useToast();
   const { mutate } = useSWRConfig();
@@ -194,11 +202,9 @@ const Transaction = ({
     threshold: number = 1e-6,
   ) => {
     if (Math.abs(value) < threshold) {
-      // If the number is smaller than the threshold, format it in scientific notation with limited precision.
       return value.toExponential(2);
     }
 
-    // Format the number using compact notation and the desired precision.
     const data = Intl.NumberFormat("en-US", {
       notation: "compact",
       maximumFractionDigits: fraction,
