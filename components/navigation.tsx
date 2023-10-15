@@ -77,13 +77,24 @@ export function Navigation() {
                   </a>
                 </NavigationMenuLink>
               </li>
-              <ListItem href="/docs" title="Gitbook">
+              <ListItem
+                href="https://kiteshields-organization.gitbook.io/kiteshield/"
+                target="_blank"
+                title="Gitbook"
+              >
                 Learn all about it
               </ListItem>
-              <ListItem href="/docs/installation" title="Twitter">
+              <ListItem
+                href="https://twitter.com/kiteshieldapp"
+                target="_blank"
+                title="Twitter"
+              >
                 Get to know us
               </ListItem>
-              <ListItem href="/docs/primitives/typography" title="Discord">
+              <ListItem
+                href="/docs/primitives/typography"
+                title="Discord (soon)"
+              >
                 Come and say hi
               </ListItem>
             </ul>

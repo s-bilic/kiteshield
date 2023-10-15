@@ -163,6 +163,7 @@ const InsuredTransaction = ({
       ? null
       : null;
 
+  // TO-DO: Refactor into smaller components
   return (
     <Card
       className={

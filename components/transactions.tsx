@@ -1,13 +1,14 @@
 "use client";
 import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+
+import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import Transaction from "./transaction";
 import { Separator } from "@/components/ui/separator";
 import { pythTokens } from "@/lib/tokens";
 import { Skeleton } from "@/components/ui/skeleton";
 import useSWR from "swr";
 import { fetcher } from "@/lib/utils";
+import Blank from "./blank";
 
 interface IProps {
   tokenList?: [
@@ -103,15 +104,26 @@ const Transactions = ({ tokenList, insuredData, session }: IProps) => {
   );
   return (
     <div className="w-full my-4 ">
-      {isLoading &&
-        Array(5)
-          .fill()
-          ?.map((item, index) => (
-            <React.Fragment key={index}>
-              {index !== 0 && <Separator decorative={false} className="my-2" />}
-              <LoadingSkeleton />
-            </React.Fragment>
-          ))}
+      {isLoading
+        ? Array(5)
+            .fill()
+            ?.map((item, index) => (
+              <React.Fragment key={index}>
+                {index !== 0 && (
+                  <Separator decorative={false} className="my-2" />
+                )}
+                <LoadingSkeleton />
+              </React.Fragment>
+            ))
+        : !filteredTransactions?.length &&
+          session && (
+            <Blank
+              title={"No transactions found"}
+              description={"Make a swap on Jupiter (DEX aggregator)"}
+              href={"https://jup.ag/"}
+              linkText={"Visit Jupiter"}
+            />
+          )}
       {!isLoading &&
         filteredTransactions?.map(
           (

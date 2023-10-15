@@ -214,11 +214,11 @@ const Transaction = ({
   };
 
   // priceHistory must be replaced with priceType
-  const transactionValue = priceHistory * transfer[1]?.tokenAmount;
+  const transactionValue =
+    Number(priceHistory) * Number(transfer[1]?.tokenAmount);
   const insuredValue = (transactionValue * priceDropValue[0]) / 100;
-  const insuredTokenValue = insuredValue / priceHistory;
 
-  const priceType =
+  const priceType: { value: Number; type: String } =
     price < priceHistory
       ? { value: price, type: "price" }
       : price > priceHistory
@@ -227,6 +227,7 @@ const Transaction = ({
       ? null
       : null;
 
+  // TO-DO: Refactor into smaller components
   return (
     <Card className="relative p-5 hover:border-white" onClick={onClick}>
       <TooltipProvider>
@@ -265,7 +266,7 @@ const Transaction = ({
               width={40}
               height={40}
               alt={"t"}
-              src={logoSpend}
+              src={logoSpend as string}
             />
             <div>
               <p className="text-s ml-2">
@@ -282,7 +283,7 @@ const Transaction = ({
                 width={40}
                 height={40}
                 alt={"t"}
-                src={logoReceived}
+                src={logoReceived as string}
               />
               <div>
                 <p className="text-s ml-2">

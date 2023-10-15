@@ -21,8 +21,21 @@ import { useEffect } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 
 interface IProps {
-  tokenList?: [];
+  tokenList?: [
+    {
+      address: String;
+      symbol: String;
+      logoURI: String;
+    },
+  ];
 }
+
+type Session = {
+  user: {
+    name: String;
+  };
+};
+
 const Main = ({ tokenList }: IProps) => {
   const [activeTab, setActiveTab] = useAtom<String>(activeTabAtom);
   const { toast, dismiss } = useToast();
@@ -32,7 +45,7 @@ const Main = ({ tokenList }: IProps) => {
 
   const insuredData = useSWR(apiUrl, () => fetcher(apiUrl), {
     revalidateOnFocus: true,
-    initialData: [], // Provide the appropriate initial data structure
+    initialData: [],
   });
 
   useEffect(() => {
@@ -67,14 +80,13 @@ const Main = ({ tokenList }: IProps) => {
           <Transactions
             tokenList={tokenList}
             insuredData={insuredData}
-            session={session}
+            session={session as Session}
           />
         </TabsContent>
         <TabsContent value="insured">
           <InsuredTransactions
             tokenList={tokenList}
             insuredData={insuredData}
-            session={session}
           />
         </TabsContent>
         <div className="absolute top-0 right-0">

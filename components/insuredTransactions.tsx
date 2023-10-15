@@ -5,13 +5,14 @@ import InsuredTransaction from "./insuredTransaction";
 import { Separator } from "@/components/ui/separator";
 import { Card } from "./ui/card";
 import { Skeleton } from "./ui/skeleton";
+import Blank from "./blank";
 
 interface IProps {
   tokenList?: [
     {
-      address: string;
-      symbol: string;
-      logoURI: string;
+      address: String;
+      symbol: String;
+      logoURI: String;
     },
   ];
   insuredData?: {
@@ -104,15 +105,24 @@ const InsuredTransactions = ({ tokenList, insuredData }: IProps) => {
   );
   return (
     <div className="w-full my-4">
-      {isLoading &&
-        Array(data?.length)
-          .fill()
-          ?.map((item, index) => (
-            <React.Fragment key={index}>
-              {index !== 0 && <Separator decorative={false} className="my-2" />}
-              <LoadingSkeleton />
-            </React.Fragment>
-          ))}
+      {isLoading
+        ? Array(5)
+            .fill()
+            ?.map((item, index) => (
+              <React.Fragment key={index}>
+                {index !== 0 && (
+                  <Separator decorative={false} className="my-2" />
+                )}
+                <LoadingSkeleton />
+              </React.Fragment>
+            ))
+        : !data?.length && (
+            <Blank
+              title={"No insured transactions found"}
+              description={"Visit the recent transactions"}
+              icon
+            />
+          )}
       {!isLoading &&
         data?.map(
           (
