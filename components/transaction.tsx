@@ -213,11 +213,6 @@ const Transaction = ({
     return data;
   };
 
-  // priceHistory must be replaced with priceType
-  const transactionValue =
-    Number(priceHistory) * Number(transfer[1]?.tokenAmount);
-  const insuredValue = (transactionValue * priceDropValue[0]) / 100;
-
   const priceType: { value: Number; type: String } =
     price < priceHistory
       ? { value: price, type: "price" }
@@ -226,6 +221,11 @@ const Transaction = ({
       : price === priceHistory
       ? null
       : null;
+
+  // priceHistory must be replaced with priceType
+  const transactionValue =
+    Number(priceType?.value) * Number(transfer[1]?.tokenAmount);
+  const insuredValue = (transactionValue * priceDropValue[0]) / 100;
 
   // TO-DO: Refactor into smaller components
   return (
@@ -470,8 +470,8 @@ const Transaction = ({
                         <div className="grid w-full max-w-sm items-center jus gap-2.5">
                           <Label htmlFor="decrease">Insures me</Label>
                           <p className="text-xs text-muted-foreground">{`$${insuredValue.toFixed(
-                            4,
-                          )} out of $${transactionValue.toFixed(4)}`}</p>
+                            2,
+                          )} out of $${transactionValue.toFixed(2)}`}</p>
                         </div>
                       </div>
                       <div className="grid full-w items-center gap-2.5 text-right">
@@ -530,6 +530,7 @@ const Transaction = ({
                         variant="secondary"
                         type="submit"
                         name="risk_button"
+                        disabled={loading}
                       >
                         {loading && (
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />

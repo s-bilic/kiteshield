@@ -33,11 +33,11 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Wallet>
-            <ClientProvider session={session}>
+          <ClientProvider session={session}>
+            <Wallet>
               <div className="p-5 mx-auto w-[680px]">{children}</div>
-            </ClientProvider>
-          </Wallet>
+            </Wallet>
+          </ClientProvider>
           <Toaster />
         </ThemeProvider>
       </body>

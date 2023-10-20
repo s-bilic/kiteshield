@@ -26,7 +26,8 @@ interface IProps {
 
 const Wallet = ({ children }: IProps) => {
   const { connect } = useWallet();
-
+  const { data: session, status } = useSession();
+  console.log(session);
   // The network can be set to 'devnet', 'testnet', or 'mainnet-beta'.
   const network = WalletAdapterNetwork.Devnet;
 
@@ -56,9 +57,9 @@ const Wallet = ({ children }: IProps) => {
     // If the signIn feature is not available, return true
     if (!("signIn" in adapter)) return true;
 
-    // if (session) {
-    //   return adapter.autoConnect();
-    // }
+    if (session) {
+      return adapter.autoConnect();
+    }
 
     // Fetch the signInInput from the backend
     const createResponse = await fetch("api/sign");
