@@ -27,7 +27,6 @@ interface IProps {
 const Wallet = ({ children }: IProps) => {
   const { connect } = useWallet();
   const { data: session, status } = useSession();
-  console.log(session);
   // The network can be set to 'devnet', 'testnet', or 'mainnet-beta'.
   const network = WalletAdapterNetwork.Devnet;
 
