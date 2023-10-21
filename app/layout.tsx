@@ -12,6 +12,7 @@ import ClientProvider from "@/components/client-provider";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { Toaster } from "@/components/ui/toaster";
+import GoogleAnalytics from "@/components/googleAnalytics";
 
 export const metadata: Metadata = {
   title: "Kiteshield",
@@ -27,6 +28,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
+        <GoogleAnalytics />
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
